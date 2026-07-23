@@ -1,0 +1,39 @@
+<% content_for :title, "Upload your CV" %>
+
+<%= onboarding_steps active: :upload %>
+
+<div class="card" data-controller="cv-upload">
+  <h1>Upload your CV</h1>
+  <p class="lead">
+    We'll automatically fill in as much of your candidate profile as possible.
+    You can review and edit everything before saving.
+  </p>
+
+  <%= form_with url: onboarding_cv_upload_path, method: :post, multipart: true do |form| %>
+    <div class="dropzone"
+         data-cv-upload-target="dropzone"
+         data-action="dragover->cv-upload#dragover dragleave->cv-upload#dragleave drop->cv-upload#drop">
+      <p><strong>Drag &amp; drop your CV here</strong>, or choose a file:</p>
+      <p class="hint">Accepted: PDF, DOC, DOCX · Max <%= Onboarding.max_cv_size_mb %> MB</p>
+      <%= form.label :file, "Choose your CV", class: "field-label" %>
+      <%= form.file_field :file,
+            accept: ".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            data: { cv_upload_target: "input", action: "cv-upload#refresh" } %>
+      <p class="dropzone__filename" data-cv-upload-target="filename"></p>
+    </div>
+
+    <label class="check" style="margin-top:1rem">
+      <%= check_box_tag :consent, "1", @candidate_profile.consent_accepted? %>
+      I agree that my CV and profile information may be processed to create and improve my candidate profile.
+    </label>
+
+    <div class="btn-row">
+      <%= form.submit "Analyze CV", class: "btn btn--primary",
+            data: { cv_upload_target: "submit" } %>
+      <button type="submit" class="btn btn--secondary"
+              formaction="<%= onboarding_continue_manually_path %>" formnovalidate>
+        Continue manually
+      </button>
+    </div>
+  <% end %>
+</div>

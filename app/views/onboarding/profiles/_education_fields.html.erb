@@ -1,0 +1,38 @@
+<div class="repeater-item" data-nested-form-target="item">
+  <% if f.object.persisted? %><%= f.hidden_field :_destroy %><% end %>
+
+  <div class="grid-2">
+    <div class="field">
+      <%= f.label :study, "Study / course" %>
+      <%= f.text_field :study %>
+    </div>
+    <div class="field">
+      <%= f.label :institution %>
+      <%= f.text_field :institution %>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="field">
+      <%= f.label :level %>
+      <%= f.select :level, option_choices(Onboarding::Options::EDUCATION_LEVELS), include_blank: "Select level" %>
+    </div>
+    <div class="field">
+      <%= f.label :location, "City and country" %>
+      <%= f.text_field :location %>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="field">
+      <%= f.label :start_date %>
+      <%= f.date_field :start_date %>
+    </div>
+    <div class="field">
+      <%= f.label :end_date %>
+      <%= f.date_field :end_date %>
+    </div>
+  </div>
+
+  <button type="button" class="btn--danger-link repeater-item__remove" data-action="nested-form#remove">Remove</button>
+</div>

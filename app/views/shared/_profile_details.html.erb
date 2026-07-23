@@ -1,0 +1,125 @@
+<%# Read-only rendering of a completed CandidateProfile. Shared by the candidate
+    summary and the recruiter view. Expects local `profile`. %>
+<% opts = Onboarding::Options %>
+
+<section class="card">
+  <h2>Personal details</h2>
+  <dl class="data-list">
+    <dt>Name</dt><dd><%= profile.full_name.presence || "—" %></dd>
+    <dt>Email</dt><dd><%= profile.email.presence || "—" %></dd>
+    <dt>Phone</dt><dd><%= profile.phone_number.presence || "—" %></dd>
+    <dt>City</dt><dd><%= profile.city.presence || "—" %></dd>
+    <dt>Country</dt><dd><%= profile.country.presence || "—" %></dd>
+    <dt>Languages</dt>
+    <dd>
+      <% if profile.candidate_languages.any? %>
+        <%= safe_join(profile.candidate_languages.map { |l| [ l.display_name, l.level_label ].compact_blank.join(" · ") }, ", ") %>
+      <% else %>—<% end %>
+    </dd>
+  </dl>
+</section>
+
+<section class="card">
+  <h2>Job preferences</h2>
+  <dl class="data-list">
+    <dt>Desired function</dt><dd><%= option_label(opts::JOB_FUNCTIONS, profile.desired_job_function) || "—" %></dd>
+    <dt>Search status</dt><dd><%= option_label(opts::SEARCH_STATUSES, profile.search_status) || "—" %></dd>
+    <dt>Preferred regions</dt>
+    <dd><%= profile.preferred_regions.map { |r| option_label(opts::REGIONS, r) }.join(", ").presence || "—" %></dd>
+    <dt>Max travel time</dt><dd><%= profile.max_travel_time ? "#{profile.max_travel_time} min" : "—" %></dd>
+    <dt>Transport</dt>
+    <dd><%= profile.transport_types.map { |t| option_label(opts::TRANSPORT_TYPES, t) }.join(", ").presence || "—" %></dd>
+    <dt>Reason for looking</dt><dd><%= profile.reason_for_looking.presence || "—" %></dd>
+  </dl>
+</section>
+
+<section class="card">
+  <h2>Employment &amp; compensation</h2>
+  <dl class="data-list">
+    <dt>Employment type</dt>
+    <dd><%= profile.employment_types.map { |t| option_label(opts::EMPLOYMENT_TYPES, t) }.join(", ").presence || "—" %></dd>
+    <dt>Years of experience</dt><dd><%= profile.years_of_experience || "—" %></dd>
+    <% if profile.desired_gross_salary.present? %><dt>Gross salary</dt><dd>€<%= profile.desired_gross_salary %></dd><% end %>
+    <% if profile.desired_percentage.present? %><dt>Percentage</dt><dd><%= profile.desired_percentage %>%</dd><% end %>
+    <% if profile.average_daily_revenue.present? %><dt>Avg. daily revenue</dt><dd>€<%= profile.average_daily_revenue %></dd><% end %>
+    <% if profile.big_registration_status.present? %>
+      <dt>BIG status</dt><dd><%= option_label(opts::BIG_REGISTRATION_STATUSES, profile.big_registration_status) %></dd>
+    <% end %>
+    <% if profile.big_number.present? %><dt>BIG number</dt><dd><%= profile.big_number %></dd><% end %>
+  </dl>
+</section>
+
+<section class="card">
+  <h2>Education</h2>
+  <% if profile.educations.any? %>
+    <table class="table">
+      <thead><tr><th>Study</th><th>Institution</th><th>Level</th><th>Period</th></tr></thead>
+      <tbody>
+        <% profile.educations.each do |edu| %>
+          <tr>
+            <td><%= edu.study %></td>
+            <td><%= edu.institution.presence || "—" %></td>
+            <td><%= option_label(opts::EDUCATION_LEVELS, edu.level) || "—" %></td>
+            <td><%= [ edu.start_date&.year, edu.end_date&.year ].compact.join(" – ").presence || "—" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %><p class="muted">—</p><% end %>
+</section>
+
+<section class="card">
+  <h2>Work experience</h2>
+  <% if profile.work_experiences.any? %>
+    <% profile.work_experiences.each do |exp| %>
+      <div class="repeater-item">
+        <strong><%= exp.job_title %></strong> — <%= exp.company_name %>
+        <div class="muted">
+          <%= exp.start_date&.strftime("%b %Y") %> –
+          <%= exp.current? ? "present" : exp.end_date&.strftime("%b %Y") %>
+        </div>
+        <% if exp.responsibilities.present? %><p><%= simple_format(exp.responsibilities) %></p><% end %>
+      </div>
+    <% end %>
+  <% else %><p class="muted">—</p><% end %>
+</section>
+
+<section class="card">
+  <h2>Skills</h2>
+  <% skills = profile.candidate_skills.to_a
+     matched = skills.select(&:skill_id)
+     suggested = skills.reject(&:skill_id) %>
+  <% if matched.any? %>
+    <ul class="tag-list">
+      <% matched.each do |candidate_skill| %><li><%= candidate_skill.display_name %></li><% end %>
+    </ul>
+  <% else %><p class="muted">No skills selected.</p><% end %>
+
+  <% if suggested.any? %>
+    <p class="muted" style="margin-top:0.75rem">Suggested (for review): <%= suggested.map(&:name).join(", ") %></p>
+  <% end %>
+</section>
+
+<section class="card">
+  <h2>Availability</h2>
+  <dl class="data-list">
+    <dt>Working days</dt>
+    <dd><%= profile.available_working_days.map { |d| option_label(opts::WORKING_DAYS, d) }.join(", ").presence || "—" %></dd>
+    <dt>Available from</dt><dd><%= profile.available_from&.strftime("%-d %B %Y") || "—" %></dd>
+    <dt>Notice period</dt><dd><%= profile.notice_period.presence || "—" %></dd>
+  </dl>
+</section>
+
+<% if profile.professional_summary.present? || profile.motivation.present? %>
+  <section class="card">
+    <h2>Additional information</h2>
+    <% if profile.professional_summary.present? %>
+      <h3>Professional summary</h3>
+      <p><%= simple_format(profile.professional_summary) %></p>
+    <% end %>
+    <% if profile.motivation.present? %>
+      <h3>Motivation</h3>
+      <p><%= simple_format(profile.motivation) %></p>
+    <% end %>
+  </section>
+<% end %>

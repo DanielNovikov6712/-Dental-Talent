@@ -1,0 +1,11 @@
+New candidate profile completed
+===============================
+
+Name:       <%= @name %>
+Email:      <%= @profile.email %>
+Function:   <%= @function %>
+City:       <%= @profile.city %>
+Experience: <%= @profile.years_of_experience %> years
+
+View the full profile:
+<%= admin_candidate_profile_url(@profile) %>

@@ -1,0 +1,16 @@
+<% languages = Language.ordered.to_a %>
+<div data-controller="nested-form">
+  <div data-nested-form-target="items">
+    <%= form.fields_for :candidate_languages do |language_form| %>
+      <%= render "language_fields", f: language_form, languages: languages %>
+    <% end %>
+  </div>
+
+  <template data-nested-form-target="template">
+    <%= form.fields_for :candidate_languages, CandidateLanguage.new, child_index: "NEW_RECORD" do |language_form| %>
+      <%= render "language_fields", f: language_form, languages: languages %>
+    <% end %>
+  </template>
+
+  <button type="button" class="btn btn--secondary" data-action="nested-form#add">+ Add language</button>
+</div>

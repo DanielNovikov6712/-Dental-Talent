@@ -1,0 +1,43 @@
+<section class="card">
+  <h2>Personal details</h2>
+
+  <div class="grid-2">
+    <div class="field">
+      <%= form.label :first_name do %>First name <%= profile_field_badge(profile, :first_name, required: true) %><% end %>
+      <%= form.text_field :first_name, autocomplete: "given-name" %>
+    </div>
+    <div class="field">
+      <%= form.label :last_name do %>Last name <%= profile_field_badge(profile, :last_name, required: true) %><% end %>
+      <%= form.text_field :last_name, autocomplete: "family-name" %>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="field">
+      <%= form.label :email do %>Email <%= profile_field_badge(profile, :email, required: true) %><% end %>
+      <%= form.email_field :email, autocomplete: "email" %>
+    </div>
+    <div class="field">
+      <%= form.label :phone_number do %>Phone number <%= profile_field_badge(profile, :phone_number, required: true) %><% end %>
+      <%= form.telephone_field :phone_number, autocomplete: "tel", placeholder: "+31 6 12345678" %>
+      <p class="hint">Dutch and international formats are accepted.</p>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="field">
+      <%= form.label :city do %>City / place of residence <%= profile_field_badge(profile, :city, required: true) %><% end %>
+      <%= form.text_field :city, autocomplete: "address-level2" %>
+    </div>
+    <div class="field">
+      <%= form.label :country do %>Country <%= profile_field_badge(profile, :country) %><% end %>
+      <%= form.text_field :country, autocomplete: "country-name" %>
+    </div>
+  </div>
+
+  <div class="field">
+    <span class="field-label">Languages <%= profile_field_badge(profile, :languages, required: true) %></span>
+    <p class="hint">Add each language you speak and, if you know it, your level.</p>
+    <%= render "languages", form: form, profile: profile %>
+  </div>
+</section>

@@ -1,0 +1,30 @@
+<% content_for :title, "Candidate profiles" %>
+
+<div class="card">
+  <h1>Completed candidate profiles</h1>
+  <p class="lead">Profiles candidates have completed through onboarding.</p>
+</div>
+
+<div class="card">
+  <% if @profiles.any? %>
+    <table class="table">
+      <thead>
+        <tr><th>Name</th><th>Function</th><th>City</th><th>Experience</th><th>Completed</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @profiles.each do |profile| %>
+          <tr>
+            <td><%= profile.full_name.presence || profile.email %></td>
+            <td><%= option_label(Onboarding::Options::JOB_FUNCTIONS, profile.desired_job_function) || "—" %></td>
+            <td><%= profile.city.presence || "—" %></td>
+            <td><%= profile.years_of_experience ? "#{profile.years_of_experience} yr" : "—" %></td>
+            <td><%= profile.completed_at&.strftime("%-d %b %Y") %></td>
+            <td><%= link_to "View", admin_candidate_profile_path(profile) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="muted">No completed profiles yet.</p>
+  <% end %>
+</div>

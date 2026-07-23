@@ -1,0 +1,19 @@
+<% content_for :title, "Your profile" %>
+
+<div class="card">
+  <h1>🎉 Your profile is complete</h1>
+  <p class="lead">
+    Thanks, <%= @candidate_profile.first_name.presence || "there" %>! Your profile has been saved and
+    shared with our recruitment team. You can review it below or make changes.
+  </p>
+  <div class="btn-row">
+    <%= link_to "Edit my profile", edit_onboarding_profile_path, class: "btn btn--secondary" %>
+    <% if current_cv_document %>
+      <%= link_to "Download my CV",
+            download_onboarding_document_path(current_cv_document),
+            class: "btn btn--ghost" %>
+    <% end %>
+  </div>
+</div>
+
+<%= render "shared/profile_details", profile: @candidate_profile %>

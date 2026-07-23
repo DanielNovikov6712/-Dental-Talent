@@ -1,0 +1,24 @@
+endodontics:
+  name: Endodontics
+  function_group: dentist
+  position: 0
+
+restorative_dentistry:
+  name: Restorative dentistry
+  function_group: dentist
+  position: 1
+
+surgery:
+  name: Surgery
+  function_group: dentist
+  position: 2
+
+periodontology:
+  name: Periodontology
+  function_group: dental_hygienist
+  position: 0
+
+sterilization:
+  name: Sterilization
+  function_group: dental_assistant
+  position: 0

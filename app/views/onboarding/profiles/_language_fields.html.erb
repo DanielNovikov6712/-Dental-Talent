@@ -1,0 +1,14 @@
+<div class="repeater-item" data-nested-form-target="item">
+  <% if f.object.persisted? %><%= f.hidden_field :_destroy %><% end %>
+  <div class="grid-2">
+    <div class="field">
+      <%= f.label :language_id, "Language" %>
+      <%= f.collection_select :language_id, languages, :id, :name, include_blank: "Select a language" %>
+    </div>
+    <div class="field">
+      <%= f.label :level, "Level" %>
+      <%= f.select :level, option_choices(Onboarding::Options::LANGUAGE_LEVELS), include_blank: "Not specified" %>
+    </div>
+  </div>
+  <button type="button" class="btn--danger-link repeater-item__remove" data-action="nested-form#remove">Remove</button>
+</div>

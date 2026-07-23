@@ -1,0 +1,19 @@
+<section class="card">
+  <h2>Availability</h2>
+
+  <fieldset class="field">
+    <legend>Available working days <%= profile_field_badge(profile, :available_working_days, required: true) %></legend>
+    <%= multiselect_checkboxes(profile, :available_working_days, Onboarding::Options::WORKING_DAYS) %>
+  </fieldset>
+
+  <div class="grid-2">
+    <div class="field">
+      <%= form.label :available_from do %>Available from <%= profile_field_badge(profile, :available_from, required: true) %><% end %>
+      <%= form.date_field :available_from %>
+    </div>
+    <div class="field">
+      <%= form.label :notice_period, "Notice period" %>
+      <%= form.text_field :notice_period, placeholder: "e.g. 1 month" %>
+    </div>
+  </div>
+</section>

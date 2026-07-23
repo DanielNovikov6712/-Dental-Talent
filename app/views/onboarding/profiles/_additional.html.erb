@@ -1,0 +1,20 @@
+<section class="card">
+  <h2>Additional information</h2>
+
+  <div class="field">
+    <%= form.label :professional_summary do %>Professional summary <%= profile_field_badge(profile, :professional_summary) %><% end %>
+    <%= form.text_area :professional_summary, rows: 4 %>
+    <p class="hint">A short summary employers will see. You can edit or rewrite it.</p>
+  </div>
+
+  <div class="field">
+    <%= form.label :motivation, "Motivation for employer" %>
+    <%= form.text_area :motivation, rows: 3 %>
+  </div>
+
+  <div class="field">
+    <%= form.label :internal_notes, "Internal notes" %>
+    <%= form.text_area :internal_notes, rows: 3 %>
+    <p class="hint">Only you fill this in. Shared with our recruitment team.</p>
+  </div>
+</section>

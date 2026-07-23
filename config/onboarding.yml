@@ -1,0 +1,26 @@
+# Configuration for the candidate onboarding module.
+# Values can be overridden per environment or via ENV (see below).
+default: &default
+  # Maximum accepted CV upload size, in megabytes (PRD: configurable, ~25MB+).
+  max_cv_size_mb: <%= ENV.fetch("MAX_CV_UPLOAD_SIZE_MB", 25) %>
+
+  # Accepted CV content types (PDF, DOC, DOCX).
+  allowed_content_types:
+    - application/pdf
+    - application/msword
+    - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+
+  # Where "new completed profile" notifications are sent.
+  recruitment_team_email: <%= ENV.fetch("RECRUITMENT_TEAM_EMAIL", "recruitment@example.com") %>
+
+  # Optional outbound webhook fired on completion (blank = disabled).
+  webhook_url: "<%= ENV.fetch("ONBOARDING_WEBHOOK_URL", "") %>"
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

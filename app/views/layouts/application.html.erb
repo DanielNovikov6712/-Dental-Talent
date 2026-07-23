@@ -1,29 +1,44 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Test Assignment" %></title>
+    <title><%= content_for(:title) || "Dental Talent — Candidate Onboarding" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Test Assignment">
-    <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
-    <%= yield %>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <%= link_to "🦷 Dental Talent", root_path, class: "site-header__brand" %>
+        <nav class="site-header__nav">
+          <% if authenticated? %>
+            <% if Current.user.staff? %>
+              <%= link_to "Candidate profiles", admin_candidate_profiles_path, class: "nav-link" %>
+            <% end %>
+            <span class="nav-user"><%= Current.user.email_address %></span>
+            <%= button_to "Sign out", session_path, method: :delete, class: "nav-link nav-link--button" %>
+          <% else %>
+            <%= link_to "Sign in", new_session_path, class: "nav-link" %>
+          <% end %>
+        </nav>
+      </div>
+    </header>
+
+    <main class="site-main">
+      <% if notice %><div class="flash flash--notice" role="status"><%= notice %></div><% end %>
+      <% if alert %><div class="flash flash--alert" role="alert"><%= alert %></div><% end %>
+
+      <%= yield %>
+    </main>
   </body>
 </html>

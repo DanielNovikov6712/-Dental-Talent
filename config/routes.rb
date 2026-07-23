@@ -1,14 +1,37 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  # Authentication (Rails 8 built-in) + candidate self-registration.
+  resource  :session, only: %i[new create destroy]
+  resources :passwords, param: :token
+  resource  :registration, only: %i[new create]
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  # Candidate onboarding flow.
+  namespace :onboarding do
+    # Step 1 — CV upload
+    resource :cv_upload, only: %i[show create], path: "cv"
+    post "cv/continue", to: "cv_uploads#continue_manually", as: :continue_manually
+
+    # CV processing state (polled) + private download
+    resources :documents, only: %i[show] do
+      member do
+        get :status
+        get :download
+      end
+    end
+
+    # Step 2 — Review & complete profile (+ completed summary)
+    resource :profile, only: %i[show edit update]
+  end
+
+  # Recruiter / admin: review completed candidate profiles.
+  namespace :admin do
+    resources :candidate_profiles, only: %i[index show] do
+      get :cv, on: :member
+    end
+  end
+
+  # Role-aware landing page.
+  root "home#show"
 end

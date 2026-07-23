@@ -4,5 +4,8 @@
 # Use this to limit dissemination of sensitive information.
 # See the ActiveSupport::ParameterFilter documentation for supported notations and behaviors.
 Rails.application.config.filter_parameters += [
-  :passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc
+  :passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc,
+  # Candidate PII collected by the onboarding form (GDPR): keep it out of logs.
+  :first_name, :last_name, :phone_number, :city, :country, :big_number,
+  :desired_gross_salary, :average_daily_revenue, :motivation, :internal_notes, :professional_summary
 ]

@@ -1,0 +1,19 @@
+<section class="card">
+  <h2>Education <%= profile_field_badge(profile, :educations) %></h2>
+
+  <div data-controller="nested-form">
+    <div data-nested-form-target="items">
+      <%= form.fields_for :educations do |education_form| %>
+        <%= render "education_fields", f: education_form %>
+      <% end %>
+    </div>
+
+    <template data-nested-form-target="template">
+      <%= form.fields_for :educations, Education.new, child_index: "NEW_RECORD" do |education_form| %>
+        <%= render "education_fields", f: education_form %>
+      <% end %>
+    </template>
+
+    <button type="button" class="btn btn--secondary" data-action="nested-form#add">+ Add education</button>
+  </div>
+</section>

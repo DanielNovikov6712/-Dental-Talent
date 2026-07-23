@@ -1,0 +1,24 @@
+<% content_for :title, "Analyzing your CV" %>
+
+<%= onboarding_steps active: :upload %>
+
+<div class="card text-center"
+     data-controller="poll"
+     data-poll-url-value="<%= status_onboarding_document_path(@document) %>">
+  <div class="spinner" role="status" aria-label="Analyzing"></div>
+  <h1>Analyzing your CV…</h1>
+  <p class="lead">
+    We're reading <strong><%= @document.original_filename %></strong> and prefilling your profile.
+    This usually takes a few seconds.
+  </p>
+  <p class="muted">You'll be taken to the review step automatically when it's ready.</p>
+
+  <p data-poll-target="fallback" hidden>
+    This is taking longer than expected.
+    <%= link_to "Continue manually", edit_onboarding_profile_path %>.
+  </p>
+
+  <noscript>
+    <p><%= link_to "Continue to the review step", edit_onboarding_profile_path, class: "btn btn--primary" %></p>
+  </noscript>
+</div>

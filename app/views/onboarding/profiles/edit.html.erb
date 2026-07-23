@@ -1,0 +1,48 @@
+<% content_for :title, "Review your profile" %>
+
+<%= onboarding_steps active: :review %>
+
+<div class="card">
+  <h1>Review &amp; complete your profile</h1>
+  <p class="lead">
+    Check the details we prefilled from your CV, correct anything that's wrong,
+    and fill in the fields that are still missing. Fields marked
+    <span class="badge badge--extracted">Extracted from CV</span> came from your upload —
+    please double-check them.
+  </p>
+  <% if current_cv_document %>
+    <p class="muted">
+      CV on file: <%= link_to current_cv_document.original_filename,
+        download_onboarding_document_path(current_cv_document) %>
+    </p>
+  <% end %>
+</div>
+
+<%= form_with model: @candidate_profile, url: onboarding_profile_path, method: :patch,
+      data: {
+        controller: "conditional-fields",
+        conditional_fields_skill_map_value: Onboarding::Options::JOB_FUNCTION_TO_SKILL_GROUP.to_json
+      } do |form| %>
+
+  <%= render "shared/error_summary", record: @candidate_profile %>
+
+  <%= render "personal_details", form: form, profile: @candidate_profile %>
+  <%= render "job_preferences", form: form, profile: @candidate_profile %>
+  <%= render "employment", form: form, profile: @candidate_profile %>
+  <%= render "education", form: form, profile: @candidate_profile %>
+  <%= render "work_experience", form: form, profile: @candidate_profile %>
+  <%= render "skills", form: form, profile: @candidate_profile %>
+  <%= render "availability", form: form, profile: @candidate_profile %>
+  <%= render "additional", form: form, profile: @candidate_profile %>
+
+  <div class="card">
+    <label class="check">
+      <%= form.check_box :consent_accepted %>
+      I agree that my CV and profile information may be processed to create and improve my candidate profile.
+    </label>
+    <div class="btn-row">
+      <%= form.submit "Save my profile", class: "btn btn--primary" %>
+      <%= link_to "Back to upload", onboarding_cv_upload_path, class: "btn btn--ghost" %>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,14 @@
+dutch:
+  name: Dutch
+  code: nl
+  position: 0
+
+english:
+  name: English
+  code: en
+  position: 1
+
+german:
+  name: German
+  code: de
+  position: 2

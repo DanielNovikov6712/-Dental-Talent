@@ -1,0 +1,19 @@
+<section class="card">
+  <h2>Work experience <%= profile_field_badge(profile, :work_experiences) %></h2>
+
+  <div data-controller="nested-form">
+    <div data-nested-form-target="items">
+      <%= form.fields_for :work_experiences do |experience_form| %>
+        <%= render "work_experience_fields", f: experience_form %>
+      <% end %>
+    </div>
+
+    <template data-nested-form-target="template">
+      <%= form.fields_for :work_experiences, WorkExperience.new, child_index: "NEW_RECORD" do |experience_form| %>
+        <%= render "work_experience_fields", f: experience_form %>
+      <% end %>
+    </template>
+
+    <button type="button" class="btn btn--secondary" data-action="nested-form#add">+ Add work experience</button>
+  </div>
+</section>

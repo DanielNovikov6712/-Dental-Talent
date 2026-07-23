@@ -1,0 +1,24 @@
+<% content_for :title, "Candidate — #{@profile.full_name.presence || @profile.email}" %>
+
+<div class="card">
+  <p class="muted"><%= link_to "← Back to profiles", admin_candidate_profiles_path %></p>
+  <h1><%= @profile.full_name.presence || @profile.email %></h1>
+  <p class="lead">
+    <%= option_label(Onboarding::Options::JOB_FUNCTIONS, @profile.desired_job_function) %>
+    · completed <%= @profile.completed_at&.strftime("%-d %B %Y") %>
+  </p>
+  <% if @profile.candidate_documents.cvs.any? %>
+    <div class="btn-row">
+      <%= link_to "Download CV", cv_admin_candidate_profile_path(@profile), class: "btn btn--secondary" %>
+    </div>
+  <% end %>
+</div>
+
+<%= render "shared/profile_details", profile: @profile %>
+
+<% if @profile.internal_notes.present? %>
+  <section class="card">
+    <h2>Internal notes</h2>
+    <p><%= simple_format(@profile.internal_notes) %></p>
+  </section>
+<% end %>
