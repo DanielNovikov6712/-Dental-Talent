@@ -143,13 +143,26 @@ RSpec.describe CandidateProfile, type: :model do
       profile.assign_attributes(
         status: "completed",
         desired_job_function: "general_dentist", employment_types: [ "employed" ],
-        desired_gross_salary: 4000, average_daily_revenue: 800, big_number: "12345678901"
+        desired_gross_salary: 4000, average_daily_revenue: 800,
+        big_registration_status: "big_registered", big_number: "12345678901"
       )
       profile.valid?
 
       expect(profile.desired_gross_salary).to eq(4000)
       expect(profile.average_daily_revenue).to eq(800)
       expect(profile.big_number).to eq("12345678901")
+    end
+
+    it "clears the BIG number when the status is not 'BIG registered'" do
+      profile.assign_attributes(
+        status: "completed",
+        desired_job_function: "general_dentist", employment_types: [ "employed" ],
+        big_registration_status: "in_progress", big_number: "12345678901"
+      )
+      profile.valid?
+
+      expect(profile.big_registration_status).to eq("in_progress")
+      expect(profile.big_number).to be_nil
     end
 
     it "does not clear extracted values on a lenient draft" do

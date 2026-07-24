@@ -38,9 +38,12 @@
       <div class="field">
         <%= form.label :big_registration_status, "BIG registration status" %>
         <%= form.select :big_registration_status,
-              option_choices(Constants::BIG_REGISTRATION_STATUSES), include_blank: "Select status" %>
+              option_choices(Constants::BIG_REGISTRATION_STATUSES),
+              { include_blank: "Select status" },
+              { data: { conditional_fields_target: "bigStatus", action: "change->conditional-fields#update" } } %>
       </div>
-      <div class="field">
+      <div class="field section-fields" data-conditional-fields-target="group"
+           data-visible-big-status="<%= Constants::BIG_REGISTERED_STATUS %>">
         <%= form.label :big_number do %>BIG number <%= profile_field_badge(profile, :big_number) %><% end %>
         <%= form.text_field :big_number %>
         <p class="hint">Required when your BIG status is "BIG registered".</p>

@@ -115,10 +115,8 @@ class CandidateProfile < ApplicationRecord
     self.desired_percentage = nil unless percentage_relevant?
     self.average_daily_revenue = nil unless revenue_relevant?
 
-    unless requires_big?
-      self.big_registration_status = nil
-      self.big_number = nil
-    end
+    self.big_registration_status = nil unless requires_big?
+    self.big_number = nil unless big_registration_status == Constants::BIG_REGISTERED_STATUS
   end
 
   def candidate_languages_distinct

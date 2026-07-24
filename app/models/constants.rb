@@ -81,6 +81,28 @@ module Constants
   INSTITUTION_KEYWORDS = /universiteit|hogeschool|university|college|institute|instituut|academy|academie|\broc\b|school/i
   COMPANY_KEYWORDS     = /\bb\.?v\.?\b|kliniek|praktijk|clinic|centre|center|tandarts|dental|ltd|gmbh|group/i
 
+  COUNTRY_NAMES = {
+    "the netherlands" => "Netherlands", "netherlands" => "Netherlands", "nederland" => "Netherlands", "holland" => "Netherlands",
+    "belgium" => "Belgium", "belgië" => "Belgium", "belgie" => "Belgium", "belgique" => "Belgium",
+    "germany" => "Germany", "duitsland" => "Germany", "deutschland" => "Germany",
+    "france" => "France", "frankrijk" => "France",
+    "spain" => "Spain", "spanje" => "Spain", "españa" => "Spain",
+    "italy" => "Italy", "italië" => "Italy", "italie" => "Italy",
+    "poland" => "Poland", "polen" => "Poland",
+    "portugal" => "Portugal",
+    "united kingdom" => "United Kingdom", "england" => "United Kingdom",
+    "ireland" => "Ireland", "ierland" => "Ireland",
+    "austria" => "Austria", "oostenrijk" => "Austria",
+    "switzerland" => "Switzerland", "zwitserland" => "Switzerland"
+  }.freeze
+
+  BIG_STATUS_KEYWORDS = [
+    [ /\b(in\s*(aanvraag|behandeling|progress|process)|aangevraagd)\b/i, "in_progress" ],
+    [ /\b(onder\s*supervisie|under\s*supervision)\b/i, "under_supervision" ],
+    [ /\b(niet\s*van\s*toepassing|not\s*applicable|geen\s*big[\s\-]*registratie)\b/i, "not_applicable" ],
+    [ /\bbig[\s\-]*(geregistreerd|registered)\b/i, "big_registered" ]
+  ].freeze
+
   JOB_FUNCTIONS = {
     "general_dentist"          => "General dentist",
     "dental_hygienist"         => "Dental hygienist",
@@ -126,7 +148,7 @@ module Constants
     "temporary"     => "Temporary / interim"
   }.freeze
 
-  SALARY_EMPLOYMENT_TYPES     = %w[employed temporary].freeze
+  SALARY_EMPLOYMENT_TYPES     = %w[employed].freeze
   PERCENTAGE_EMPLOYMENT_TYPES = %w[self_employed freelance].freeze
 
   SEARCH_STATUSES = {

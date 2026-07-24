@@ -38,7 +38,7 @@ module Onboarding
         :desired_gross_salary, :desired_percentage, :average_daily_revenue,
         :big_registration_status, :big_number, :years_of_experience,
         :available_from, :notice_period,
-        :motivation, :professional_summary,
+        :motivation, :internal_notes, :professional_summary,
         :consent_accepted,
         preferred_regions: [], transport_types: [], employment_types: [], available_working_days: [],
         educations_attributes: %i[id institution study location level start_date end_date position _destroy],

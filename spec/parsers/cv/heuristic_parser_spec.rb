@@ -61,6 +61,18 @@ RSpec.describe Cv::HeuristicParser do
     )
   end
 
+  it "extracts a non-Dutch country" do
+    text = "Jane Doe\nEmail: jane@example.com\nWoonplaats: Antwerpen, België\n"
+    expect(described_class.call(text).country).to eq("Belgium")
+  end
+
+  it "infers the BIG status from the text rather than always 'big_registered'" do
+    text = "Tandarts\nBIG-registratie: in aanvraag\n"
+    result = described_class.call(text)
+    expect(result.big_registration_status).to eq("in_progress")
+    expect(result.big_number).to be_nil
+  end
+
   it "extracts education and work experience records" do
     expect(result.educations.size).to eq(1)
     expect(result.educations.first).to include(study: "Tandheelkunde", level: "master")

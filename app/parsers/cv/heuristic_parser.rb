@@ -48,10 +48,25 @@ module Cv
     end
 
     def detect_city_and_country
-      country = "Netherlands" if @text.match?(/\b(nederland|netherlands|the netherlands)\b/i)
       city = labeled_value(/woonplaats|city|plaats|residence|location/i)
       city = city&.split(/[,\d]/)&.first&.strip.presence
-      [ city, country ]
+      [ city, detect_country ]
+    end
+
+    def detect_country
+      labeled = labeled_value(/\b(land|country)\b/i)
+      return country_name(labeled) || labeled.split(/[,\d]/).first&.strip.presence if labeled.present?
+
+      Constants::COUNTRY_NAMES.each do |token, name|
+        # Unicode-safe word boundary ([[:alpha:]] covers accented letters, \b does not).
+        return name if @text.match?(/(?<![[:alpha:]])#{Regexp.escape(token)}(?![[:alpha:]])/i)
+      end
+      nil
+    end
+
+    def country_name(text)
+      down = text.to_s.downcase
+      Constants::COUNTRY_NAMES.find { |token, _| down.include?(token) }&.last
     end
 
     def function_focus(result)
@@ -77,11 +92,19 @@ module Cv
     end
 
     def assign_big_registration(result)
-      match = @text.match(/big[\s\-]*(?:nummer|number|registratie|registration|reg)?[\s:\-#]*([0-9]{6,15})/i)
-      return unless match
+      number = @text[/big[\s\-]*(?:nummer|number|registratie|registration|reg)?[\s:\-#]*([0-9]{6,15})/i, 1]
+      status = detect_big_status
+      return if number.nil? && status.nil?
 
-      result.big_number = match[1]
-      result.big_registration_status = Constants::BIG_REGISTERED_STATUS
+      result.big_number = number
+      # A concrete BIG number implies registration; otherwise use a status found
+      # in the text (in progress / under supervision / not applicable).
+      result.big_registration_status = status || (Constants::BIG_REGISTERED_STATUS if number)
+    end
+
+    def detect_big_status
+      Constants::BIG_STATUS_KEYWORDS.each { |regexp, status| return status if @text.match?(regexp) }
+      nil
     end
 
     def split_sections

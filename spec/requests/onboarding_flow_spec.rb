@@ -12,6 +12,7 @@ RSpec.describe "Onboarding flow", type: :request do
       preferred_regions: [ "utrecht" ], employment_types: [ "employed" ],
       transport_types: [ "car" ], available_working_days: %w[monday tuesday],
       available_from: Date.current.to_s, consent_accepted: "1",
+      internal_notes: "Available for interviews from mid-August.",
       candidate_languages_attributes: { "0" => { language_id: languages(:dutch).id, level: "native" } }
     }
   end
@@ -63,6 +64,7 @@ RSpec.describe "Onboarding flow", type: :request do
       profile.reload
       expect(profile).to be_completed
       expect(profile.first_name).to eq("Jane")
+      expect(profile.internal_notes).to eq("Available for interviews from mid-August.")
       expect(profile.skill_ids).to eq([ skills(:endodontics).id ])
       expect(profile.candidate_skills.suggestions.count).to eq(2)
       expect(profile.candidate_languages.count).to eq(1)
