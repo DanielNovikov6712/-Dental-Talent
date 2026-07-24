@@ -39,4 +39,24 @@ RSpec.describe ParseCandidateCvJob, type: :job do
 
     expect(document.reload).to be_failed
   end
+
+  it "parses a real PDF end to end" do
+    document = build_document("cv.pdf", file_fixture("sample_cv.pdf").open, "application/pdf")
+
+    described_class.perform_now(document)
+
+    expect(document.reload).to be_completed
+    expect(profile.reload.email).to eq("jane@example.com")
+    expect(profile.desired_job_function).to eq("general_dentist")
+  end
+
+  it "marks the document failed with a generic message when mapping raises" do
+    document = build_document("cv.pdf", file_fixture("sample_cv.pdf").open, "application/pdf")
+    allow(Cv::MapProfile).to receive(:call!).and_raise(StandardError, "boom")
+
+    described_class.perform_now(document)
+
+    expect(document.reload).to be_failed
+    expect(document.parsing_error).to match(/something went wrong/i)
+  end
 end

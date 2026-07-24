@@ -1,19 +1,10 @@
 module Cv
-  # Rule-based CV parser (Dutch + English). Deterministic and dependency-free so
-  # it is fully unit-testable and never calls an external service. It is a
-  # strategy behind Cv::Parser.call — an LLM-backed strategy can replace it
-  # without changing the extractor, mapper, or job.
-  #
-  # Guiding rule (PRD §5): only populate a field when it is confidently found;
-  # never guess. Anything uncertain is left blank for the candidate to complete.
   class HeuristicParser
     EMAIL_REGEXP = /[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i
     PHONE_REGEXP = /(?<![\w])(\+?\d[\d\s().\-]{6,}\d)/
     YEAR_REGEXP  = /\b(?:19|20)\d{2}\b/
     PRESENT_REGEXP = /\b(?:present|current|now|heden)\b/i
 
-    # Canonical section => heading matcher (matched against a normalised,
-    # colon-stripped, downcased heading line).
     SECTION_PATTERNS = {
       summary:     /\A(professional\s+)?(summary|profile|profiel|persoonlijk profiel|over mij|about me)\z/,
       experience:  /\A(work\s+)?(experience|employment history|employment|werkervaring|ervaring|loopbaan)\z/,
@@ -22,7 +13,6 @@ module Cv
       languages:   /\A(languages|talen|taalvaardigheid)\z/
     }.freeze
 
-    # CV title => canonical English language name.
     LANGUAGE_NAMES = {
       "dutch" => "Dutch", "nederlands" => "Dutch",
       "english" => "English", "engels" => "English",
@@ -45,7 +35,6 @@ module Cv
       "basic" => "basic", "basis" => "basic", "beginner" => "basic"
     }.freeze
 
-    # Ordered most-specific-first so "dental hygienist" wins over "dentist".
     JOB_FUNCTION_PATTERNS = [
       [ /mondhygi[eë]nist|dental hygienist|hygienist/i, "dental_hygienist" ],
       [ /paro[\-\s]?preventie/i,                        "paro_prevention_assistant" ],
@@ -67,7 +56,6 @@ module Cv
     end
 
     def initialize(text)
-      # Guard against nil / non-UTF-8 input so regex matching never raises.
       @text     = text.to_s.dup.force_encoding("UTF-8").scrub(" ")
       @lines    = @text.split("\n").map { |line| line.gsub(/[ \t]+/, " ").rstrip }
       @sections = split_sections
@@ -85,17 +73,13 @@ module Cv
       result.skills.concat(parse_skills)
       result.educations.concat(parse_educations)
       result.work_experiences.concat(parse_work_experiences)
-      # Detect the function last, from a confident region (header title, an
-      # explicit "Functie:" label, or the most recent job title) rather than the
-      # whole document, so an incidental word can't invent a wrong function.
+
       result.desired_job_function = detect_job_function(function_focus(result))
 
       result
     end
 
     private
-
-    # --- Whole-document extraction ---------------------------------------------
 
     def assign_contact(result)
       result.email        = @text[EMAIL_REGEXP]&.downcase
@@ -121,8 +105,6 @@ module Cv
       [ city, country ]
     end
 
-    # Text most likely to state the candidate's role: the header block, an
-    # explicit function label, and their most recent job title.
     def function_focus(result)
       sources = section_lines(:header).dup
       sources << result.work_experiences.first&.dig(:job_title)
@@ -153,10 +135,6 @@ module Cv
       result.big_registration_status = Onboarding::Options::BIG_REGISTERED_STATUS
     end
 
-    # --- Sections --------------------------------------------------------------
-
-    # Splits the document into { canonical_section => [raw lines] }. Lines above
-    # the first recognised heading go under :header.
     def split_sections
       sections = Hash.new { |hash, key| hash[key] = [] }
       current = :header
@@ -189,14 +167,11 @@ module Cv
       section_lines(name).map(&:strip).reject(&:blank?).join(" ").presence
     end
 
-    # Groups a section's lines into blocks separated by blank lines.
     def section_blocks(name)
       section_lines(name).slice_when { |before, after| before.strip.empty? != after.strip.empty? }
         .map { |group| group.map(&:strip).reject(&:blank?) }
         .reject(&:empty?)
     end
-
-    # --- Name ------------------------------------------------------------------
 
     def assign_name(result)
       name = labeled_value(/\b(name|naam)\b/i) || guess_name_from_header
@@ -211,7 +186,7 @@ module Cv
       section_lines(:header).map(&:strip).reject(&:blank?).find do |line|
         next false if line.match?(/[@\d]/)
         next false if line.match?(/curriculum vitae|resume|\bcv\b/i)
-        next false if line_is_job_or_org?(line) # e.g. a "Dental Hygienist" title line
+        next false if line_is_job_or_org?(line)
 
         words = line.split(/\s+/)
         words.size.between?(2, 3) && words.all? { |word| word.match?(/\A[[:upper:]][[:alpha:]'\-]+\z/) }
@@ -222,8 +197,6 @@ module Cv
       JOB_FUNCTION_PATTERNS.any? { |regexp, _| line.match?(regexp) } ||
         line.match?(INSTITUTION_KEYWORDS) || line.match?(COMPANY_KEYWORDS)
     end
-
-    # --- Languages -------------------------------------------------------------
 
     def parse_languages
       lines = section_lines(:languages)
@@ -243,8 +216,6 @@ module Cv
       nil
     end
 
-    # --- Skills ----------------------------------------------------------------
-
     def parse_skills
       section_lines(:skills)
         .flat_map { |line| skill_tokens(line) }
@@ -253,9 +224,6 @@ module Cv
         .uniq { |token| token.downcase }
     end
 
-    # Turn a skills-section line into tokens only when it looks like a list:
-    # a delimited line splits on its delimiters; a short line is a single skill;
-    # a long, undelimited line is prose and contributes nothing (never guess).
     def skill_tokens(line)
       if line.match?(/[,;•·|]/)
         line.split(/[,;•·|]/)
@@ -265,8 +233,6 @@ module Cv
         []
       end
     end
-
-    # --- Education -------------------------------------------------------------
 
     def parse_educations
       section_blocks(:education).filter_map do |block|
@@ -290,8 +256,6 @@ module Cv
       end
     end
 
-    # --- Work experience -------------------------------------------------------
-
     def parse_work_experiences
       section_blocks(:experience).filter_map do |block|
         content = block.reject { |line| line.match?(/\A[\d\s\-–—to.]+\z/) }
@@ -309,8 +273,6 @@ module Cv
       end
     end
 
-    # --- Shared helpers --------------------------------------------------------
-
     def block_present?(block)
       block.any? { |line| line.match?(PRESENT_REGEXP) }
     end
@@ -323,7 +285,6 @@ module Cv
       nil
     end
 
-    # First captured value after a "Label: value" style line.
     def labeled_value(label_regexp)
       @lines.each do |line|
         if (match = line.match(/\A\s*#{label_regexp}\s*[:\-]\s*(.+)\z/))

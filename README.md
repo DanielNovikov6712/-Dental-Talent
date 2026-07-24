@@ -82,17 +82,23 @@ User ─┬─ CandidateProfile ─┬─ CandidateDocument (has_one_attached :f
 
 ### CV parsing pipeline
 
-Parsing is a background job ([`ParseCandidateCvJob`](app/jobs/parse_candidate_cv_job.rb))
-composed of three replaceable stages under [`app/services/cv/`](app/services/cv):
+Business logic lives in **interactors + organizers** ([`interactor`](https://github.com/collectiveidea/interactor))
+under [`app/interactors/`](app/interactors), not in service objects — controllers
+just call an interactor and route its result.
 
-1. **`Cv::TextExtractor`** — attached file → plain text (PDF, DOCX, best-effort DOC).
-2. **`Cv::Parser`** → **`Cv::HeuristicParser`** — text → `Cv::ParsedResult` (pure data).
-3. **`Cv::ProfileMapper`** — result → prefilled draft `CandidateProfile`.
+Parsing runs in a background job ([`ParseCandidateCvJob`](app/jobs/parse_candidate_cv_job.rb))
+that invokes the [`Cv::ParseCandidateCv`](app/interactors/cv/parse_candidate_cv.rb)
+**organizer**, which chains three interactors:
 
-The parser is a **strategy** behind `Cv::Parser.call`. The default implementation
-is a deterministic, dependency-free, Dutch + English heuristic parser (so it is
-fully testable and needs no external API). Swapping in an LLM-backed strategy
-only requires a class exposing `.call(text) -> Cv::ParsedResult`.
+1. **[`Cv::ExtractText`](app/interactors/cv/extract_text.rb)** — attached file → plain text (PDF, DOCX, best-effort DOC).
+2. **[`Cv::ParseText`](app/interactors/cv/parse_text.rb)** — text → `Cv::ParsedResult` (pure data).
+3. **[`Cv::MapProfile`](app/interactors/cv/map_profile.rb)** — result → prefilled draft `CandidateProfile`.
+
+`Cv::ParseText` is the single **strategy** seam: it delegates to
+[`Cv::HeuristicParser`](app/parsers/cv/heuristic_parser.rb) — a deterministic,
+dependency-free, Dutch + English parser (fully testable, no external API).
+Swapping in an LLM-backed parser only requires a class exposing
+`.call(text) -> Cv::ParsedResult`.
 
 Key guarantees (PRD §5):
 
@@ -114,9 +120,11 @@ Stimulus controller, so they can't drift apart.
 
 Drafts are lenient so partial CV data always saves. The full validation set
 (PRD §8) runs only on completion via the `:complete` validation context, which
-also propagates to nested records. On success the profile is marked `completed`
-and [`Onboarding::CompletionNotifier`](app/services/onboarding/completion_notifier.rb)
-emails the recruitment team and, if configured, fires the
+also propagates to nested records. Completion is the
+[`Onboarding::CompleteProfile`](app/interactors/onboarding/complete_profile.rb)
+organizer: it saves the profile + skill selection in one transaction and, on the
+first completion only, [`Onboarding::AnnounceCompletion`](app/interactors/onboarding/announce_completion.rb)
+emails the recruitment team and (if configured) fires the
 `candidate_onboarding_completed` webhook.
 
 ### Privacy

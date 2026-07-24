@@ -1,10 +1,11 @@
 class CandidateProfile < ApplicationRecord
-  STATUSES = %w[draft completed].freeze
-
-  # Multi-select columns stored as JSON arrays.
   ARRAY_ATTRIBUTES = %i[
     preferred_regions transport_types employment_types
     available_working_days extracted_fields
+  ].freeze
+
+  WORK_EXPERIENCE_CORE_FIELDS = %i[
+    job_title company_name responsibilities start_date end_date
   ].freeze
 
   PHONE_FORMAT = /\A\+?[\d\s().\-\/]+\z/
@@ -21,8 +22,12 @@ class CandidateProfile < ApplicationRecord
   has_many :candidate_languages, dependent: :destroy, inverse_of: :candidate_profile
   has_many :languages, through: :candidate_languages
 
+  enum :status, { draft: "draft", completed: "completed" }, default: "draft"
+
   accepts_nested_attributes_for :educations, allow_destroy: true, reject_if: :all_blank
-  accepts_nested_attributes_for :work_experiences, allow_destroy: true, reject_if: :all_blank
+
+  accepts_nested_attributes_for :work_experiences, allow_destroy: true,
+    reject_if: ->(attrs) { WORK_EXPERIENCE_CORE_FIELDS.none? { |f| attrs[f].present? || attrs[f.to_s].present? } }
   accepts_nested_attributes_for :candidate_languages, allow_destroy: true,
     reject_if: ->(attrs) { attrs[:language_id].blank? && attrs[:name].blank? }
 
@@ -30,8 +35,6 @@ class CandidateProfile < ApplicationRecord
   before_validation :reset_irrelevant_conditional_fields
   before_save :stamp_consent_accepted_at
 
-  # --- Always-on validations (safe for partially filled drafts) ---------------
-  validates :status, inclusion: { in: STATUSES }
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
   validates :desired_job_function,
     inclusion: { in: Onboarding::Options::JOB_FUNCTIONS.keys }, allow_blank: true
@@ -48,7 +51,7 @@ class CandidateProfile < ApplicationRecord
   validates :years_of_experience,
     numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
   validates :desired_gross_salary,
-    numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+    numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
   validates :desired_percentage,
     numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }, allow_nil: true
   validates :average_daily_revenue,
@@ -56,7 +59,6 @@ class CandidateProfile < ApplicationRecord
   validate :phone_number_plausible
   validate :candidate_languages_distinct
 
-  # --- Completion-only validations (run when the candidate submits) -----------
   with_options on: :complete do |profile|
     profile.validates :first_name, :last_name, :phone_number, :city, :email, presence: true
     profile.validates :desired_job_function, :search_status, presence: true
@@ -68,24 +70,18 @@ class CandidateProfile < ApplicationRecord
     profile.validate :consent_must_be_accepted
   end
 
-  scope :completed, -> { where(status: "completed") }
   scope :recent, -> { order(completed_at: :desc, updated_at: :desc) }
-
-  def draft?     = status == "draft"
-  def completed? = status == "completed"
 
   def full_name
     [ first_name, last_name ].compact_blank.join(" ")
   end
 
-  # --- Conditional-form logic (shared by the view and completion validations) -
   def skill_group          = Onboarding::Options.skill_group_for(desired_job_function)
   def requires_big?        = Onboarding::Options.requires_big_registration?(desired_job_function)
   def revenue_relevant?    = Onboarding::Options.revenue_relevant?(desired_job_function)
   def salary_relevant?     = Onboarding::Options.salary_relevant?(employment_types)
   def percentage_relevant? = Onboarding::Options.percentage_relevant?(employment_types)
 
-  # Attributes prefilled from a CV, used to render "Extracted from CV" badges.
   def extracted?(attribute)
     Array(extracted_fields).include?(attribute.to_s)
   end
@@ -94,8 +90,6 @@ class CandidateProfile < ApplicationRecord
     self.extracted_fields = (Array(extracted_fields) + attributes.map(&:to_s)).uniq
   end
 
-  # Replace the candidate's skill selection with the given matched skill ids
-  # (restricted to the active function group) plus free-text suggestions.
   def replace_skill_selection(skill_ids:, suggestions:)
     group = skill_group
     allowed = group ? Skill.for_group(group) : Skill.none
@@ -106,20 +100,6 @@ class CandidateProfile < ApplicationRecord
       allowed.where(id: chosen).find_each { |skill| candidate_skills.create!(skill: skill) }
       Skill.normalize_suggestions(suggestions).each do |name|
         candidate_skills.create!(name: name, suggested: true)
-      end
-    end
-  end
-
-  # Used by the parser to prefill skills detected in a CV: match to the platform
-  # list where possible, otherwise keep as a free-text suggestion for recruiters.
-  def prefill_cv_skills(names)
-    group = skill_group
-    Array(names).map { |n| n.to_s.strip }.reject(&:blank?).uniq { |n| n.downcase }.each do |name|
-      skill = group && Skill.match(name, group: group)
-      if skill
-        candidate_skills.find_or_initialize_by(skill: skill).tap { |cs| cs.from_cv = true }.save!
-      elsif candidate_skills.none? { |cs| cs.skill_id.nil? && cs.name.to_s.casecmp?(name) }
-        candidate_skills.create!(name: name, suggested: true, from_cv: true)
       end
     end
   end
@@ -139,12 +119,6 @@ class CandidateProfile < ApplicationRecord
     end
   end
 
-  # Clear conditional fields that the current function / employment type make
-  # irrelevant, so a value entered before switching (client-side fields are only
-  # hidden, not removed) can never be persisted on the final profile. Mirrors how
-  # skills are filtered to the active function group. Only applied when the
-  # profile is being completed, so lenient drafts (e.g. mid-CV-prefill) keep any
-  # value that was extracted before the function was known.
   def reset_irrelevant_conditional_fields
     return unless status == "completed"
 
@@ -162,7 +136,7 @@ class CandidateProfile < ApplicationRecord
     language_ids = candidate_languages.reject(&:marked_for_destruction?).filter_map(&:language_id)
     return if language_ids.uniq.length == language_ids.length
 
-    errors.add(:base, "Each language can only be added once")
+    errors.add(:base, :language_duplicate)
   end
 
   def phone_number_plausible
@@ -177,7 +151,7 @@ class CandidateProfile < ApplicationRecord
   def at_least_one_language
     return if candidate_languages.reject(&:marked_for_destruction?).any?
 
-    errors.add(:base, "Select at least one language")
+    errors.add(:base, :language_required)
   end
 
   def big_number_present_when_registered
@@ -190,6 +164,6 @@ class CandidateProfile < ApplicationRecord
   def consent_must_be_accepted
     return if consent_accepted?
 
-    errors.add(:consent_accepted, "must be given before saving your profile")
+    errors.add(:consent_accepted, :consent_required)
   end
 end

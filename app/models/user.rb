@@ -16,11 +16,8 @@ class User < ApplicationRecord
   def recruiter? = role == "recruiter"
   def admin?     = role == "admin"
 
-  # Recruiters and admins may view candidate profiles and CVs.
   def staff? = recruiter? || admin?
 
-  # Every candidate has exactly one profile; create it lazily so the onboarding
-  # flow always has a profile to work with.
   def candidate_profile!
     candidate_profile || create_candidate_profile!(email: email_address)
   end

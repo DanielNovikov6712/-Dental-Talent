@@ -1,28 +1,21 @@
 module Cv
-  # Applies a Cv::ParsedResult to a (draft) CandidateProfile: sets only the
-  # fields that were extracted, records which ones came from the CV (for the
-  # "Extracted from CV" badges), and builds the nested education / work / language
-  # / skill records. Everything runs in one transaction and is saved with the
-  # default (draft) context so partial data never blocks the prefill.
-  #
-  # Idempotent: re-running (e.g. after a second CV upload) first clears the
-  # previously CV-sourced records, so it never duplicates rows or collides with
-  # the candidate's own manual entries.
-  class ProfileMapper
-    def initialize(profile, result)
-      @profile = profile
-      @result  = result
-    end
+  class MapProfile
+    include Interactor
 
-    def apply!
+    def call
+      @profile = context.profile
+      @result  = context.parsed_result
+
+      return if @profile.completed?
+
       @profile.transaction do
         reset_cv_prefill
         assign_scalar_fields
         build_languages
         build_educations
         build_work_experiences
+        build_skills
         @profile.save!
-        assign_skills
       end
     end
 
@@ -84,14 +77,25 @@ module Cv
       @profile.mark_extracted(:work_experiences)
     end
 
-    def assign_skills
-      return if @result.skills.empty?
+    def build_skills
+      group = @profile.skill_group
+      names = @result.skills.map { |name| name.to_s.strip }.reject(&:blank?).uniq { |name| name.downcase }
+      added = false
 
-      @profile.prefill_cv_skills(@result.skills)
-      return unless @profile.candidate_skills.exists?
+      names.each do |name|
+        if (skill = group && Skill.match(name, group: group))
+          next if @profile.candidate_skills.any? { |cs| cs.skill_id == skill.id }
 
-      @profile.mark_extracted(:skills)
-      @profile.save!
+          @profile.candidate_skills.build(skill: skill, from_cv: true)
+        elsif @profile.candidate_skills.none? { |cs| cs.skill_id.nil? && cs.name.to_s.casecmp?(name) }
+          @profile.candidate_skills.build(name: name, suggested: true, from_cv: true)
+        else
+          next
+        end
+        added = true
+      end
+
+      @profile.mark_extracted(:skills) if added
     end
 
     def valid_level(level)

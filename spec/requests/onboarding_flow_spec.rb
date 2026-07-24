@@ -51,11 +51,13 @@ RSpec.describe "Onboarding flow", type: :request do
     it "saves and completes a fully filled profile" do
       profile = candidate.candidate_profile!
 
-      patch onboarding_profile_path, params: {
-        candidate_profile: valid_profile_params,
-        skill_ids: [ skills(:endodontics).id ],
-        suggested_skills: "Communication, Teamwork"
-      }
+      expect {
+        patch onboarding_profile_path, params: {
+          candidate_profile: valid_profile_params,
+          skill_ids: [ skills(:endodontics).id ],
+          suggested_skills: "Communication, Teamwork"
+        }
+      }.to have_enqueued_mail(AdminMailer, :candidate_onboarding_completed)
 
       expect(response).to redirect_to(onboarding_profile_path)
       profile.reload
@@ -64,6 +66,22 @@ RSpec.describe "Onboarding flow", type: :request do
       expect(profile.skill_ids).to eq([ skills(:endodontics).id ])
       expect(profile.candidate_skills.suggestions.count).to eq(2)
       expect(profile.candidate_languages.count).to eq(1)
+    end
+
+    it "completes even when the blank work-experience row is left untouched" do
+      candidate.candidate_profile!
+      params = valid_profile_params.merge(
+        work_experiences_attributes: {
+          "0" => { job_title: "", company_name: "", responsibilities: "",
+                   start_date: "", end_date: "", current: "0" }
+        }
+      )
+
+      patch onboarding_profile_path, params: { candidate_profile: params }
+
+      expect(response).to redirect_to(onboarding_profile_path)
+      expect(candidate.candidate_profile.reload).to be_completed
+      expect(candidate.candidate_profile.work_experiences).to be_empty
     end
 
     it "shows the completed summary after completion" do
@@ -98,8 +116,6 @@ RSpec.describe "Onboarding flow", type: :request do
       patch onboarding_profile_path, params: { candidate_profile: valid_profile_params }
       completed_at = profile.reload.completed_at
 
-      # Re-submit without re-adding the language (the real form carries existing
-      # ids); just change a scalar field.
       edit_params = valid_profile_params.except(:candidate_languages_attributes).merge(city: "Rotterdam")
       expect {
         patch onboarding_profile_path, params: { candidate_profile: edit_params }

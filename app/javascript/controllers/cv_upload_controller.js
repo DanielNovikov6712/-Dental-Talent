@@ -1,8 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Drag-and-drop CV upload: reflects the chosen file's name and enables the
-// submit button. The <input type="file"> stays the source of truth so the form
-// submits normally (progressive enhancement — it works without JS too).
 export default class extends Controller {
   static targets = ["input", "filename", "dropzone", "submit"]
 

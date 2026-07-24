@@ -20,6 +20,10 @@ gem "jbuilder"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
+# Interactors + organizers: business logic lives in app/interactors, keeping
+# controllers thin [https://github.com/collectiveidea/interactor]
+gem "interactor", "~> 3.1"
+
 # CV text extraction for the onboarding parser
 gem "pdf-reader", "~> 2.12"
 gem "docx", "~> 0.8"

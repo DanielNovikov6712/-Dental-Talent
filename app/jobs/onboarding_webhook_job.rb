@@ -1,13 +1,14 @@
 require "net/http"
 
-# Posts a "candidate_onboarding_completed" event to the configured webhook URL
-# (PRD §10). Optional: only runs when ONBOARDING_WEBHOOK_URL is set. The payload
-# deliberately contains only matching-relevant summary data — never the raw CV
-# or parser output.
 class OnboardingWebhookJob < ApplicationJob
   queue_as :default
 
-  retry_on Net::OpenTimeout, Net::ReadTimeout, wait: :polynomially_longer, attempts: 3
+  class DeliveryError < StandardError; end
+
+  OPEN_TIMEOUT = 5
+  READ_TIMEOUT = 5
+
+  retry_on Net::OpenTimeout, Net::ReadTimeout, DeliveryError, wait: :polynomially_longer, attempts: 5
   discard_on ActiveJob::DeserializationError
 
   EVENT_NAME = "candidate_onboarding_completed".freeze
@@ -16,15 +17,26 @@ class OnboardingWebhookJob < ApplicationJob
     profile = CandidateProfile.find_by(id: profile_id)
     return unless profile && Onboarding.webhook_enabled?
 
-    uri = URI.parse(Onboarding.webhook_url)
-    response = Net::HTTP.post(uri, payload(profile).to_json, "Content-Type" => "application/json")
+    response = post(URI.parse(Onboarding.webhook_url), payload(profile).to_json)
+    return if response.is_a?(Net::HTTPSuccess)
 
-    unless response.is_a?(Net::HTTPSuccess)
-      Rails.logger.warn("Onboarding webhook returned #{response.code} for profile #{profile_id}")
-    end
+    raise DeliveryError, "Onboarding webhook returned #{response.code} for profile #{profile_id}"
   end
 
   private
+
+  def post(uri, body)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = uri.scheme == "https"
+    http.open_timeout = OPEN_TIMEOUT
+    http.read_timeout = READ_TIMEOUT
+
+    request = Net::HTTP::Post.new(uri)
+    request["Content-Type"] = "application/json"
+    request.body = body
+
+    http.request(request)
+  end
 
   def payload(profile)
     {

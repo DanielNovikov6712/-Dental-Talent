@@ -1,11 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Shows/hides profile fields based on the selected job function and employment
-// types (PRD §4). Groups declare when they are visible via data attributes:
-//   data-visible-functions="general_dentist dental_hygienist specialist"
-//   data-visible-employment="employed temporary"
-// Skill blocks declare their group via data-skill-group and are matched to the
-// function through the skillMap value.
 export default class extends Controller {
   static targets = ["functionSelect", "employment", "group", "skillGroup", "skillPrompt"]
   static values = { skillMap: Object }
@@ -27,8 +21,8 @@ export default class extends Controller {
     const employmentTypes = this.list(group.dataset.visibleEmployment)
 
     let visible = true
-    if (functions.length) visible = functions.includes(fn)
-    if (employmentTypes.length) visible = employment.some((e) => employmentTypes.includes(e))
+    if (functions.length) visible = visible && functions.includes(fn)
+    if (employmentTypes.length) visible = visible && employment.some((e) => employmentTypes.includes(e))
 
     group.hidden = !visible
   }

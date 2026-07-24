@@ -1,9 +1,4 @@
-# Namespace + convenience accessors for the onboarding module configuration
-# (see config/onboarding.yml and config/initializers/onboarding.rb).
 module Onboarding
-  # File extensions accepted for CV uploads, paired with the content types in
-  # config/onboarding.yml. Kept here because some browsers send a generic or
-  # empty content type, so we accept on either signal.
   ALLOWED_EXTENSIONS = %w[.pdf .doc .docx].freeze
 
   module_function

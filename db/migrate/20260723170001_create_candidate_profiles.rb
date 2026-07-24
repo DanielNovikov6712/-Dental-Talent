@@ -5,7 +5,6 @@ class CreateCandidateProfiles < ActiveRecord::Migration[8.1]
 
       t.string :status, null: false, default: "draft"
 
-      # Personal details
       t.string :first_name
       t.string :last_name
       t.string :email
@@ -13,7 +12,6 @@ class CreateCandidateProfiles < ActiveRecord::Migration[8.1]
       t.string :city
       t.string :country
 
-      # Job preferences
       t.string  :desired_job_function
       t.integer :max_travel_time
       t.string  :search_status
@@ -21,7 +19,6 @@ class CreateCandidateProfiles < ActiveRecord::Migration[8.1]
       t.json    :preferred_regions, default: []
       t.json    :transport_types, default: []
 
-      # Employment & compensation
       t.json    :employment_types, default: []
       t.integer :desired_gross_salary
       t.decimal :desired_percentage, precision: 5, scale: 2
@@ -30,21 +27,17 @@ class CreateCandidateProfiles < ActiveRecord::Migration[8.1]
       t.string  :big_number
       t.integer :years_of_experience
 
-      # Availability
       t.json :available_working_days, default: []
       t.date :available_from
       t.string :notice_period
 
-      # Additional information
       t.text :motivation
       t.text :internal_notes
       t.text :professional_summary
 
-      # Consent (privacy)
       t.boolean  :consent_accepted, null: false, default: false
       t.datetime :consent_accepted_at
 
-      # Onboarding bookkeeping
       t.json     :extracted_fields, default: []
       t.datetime :completed_at
 

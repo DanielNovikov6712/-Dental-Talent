@@ -1,7 +1,4 @@
 module Cv
-  # Plain, provider-agnostic container for whatever a parser managed to extract
-  # from a CV. Any field left nil/empty simply was not found — the mapper leaves
-  # the corresponding profile field blank (PRD: never invent missing data).
   class ParsedResult
     SCALAR_FIELDS = %i[
       first_name last_name email phone_number city country
@@ -13,13 +10,12 @@ module Cv
     attr_reader :languages, :educations, :work_experiences, :skills
 
     def initialize
-      @languages        = [] # [{ name:, level: }]
-      @educations       = [] # [{ institution:, study:, location:, level:, start_date:, end_date: }]
-      @work_experiences = [] # [{ job_title:, company_name:, responsibilities:, start_date:, end_date:, current: }]
-      @skills           = [] # ["Endodontics", ...]
+      @languages        = []
+      @educations       = []
+      @work_experiences = []
+      @skills           = []
     end
 
-    # Scalar field names that hold a value.
     def present_scalar_fields
       SCALAR_FIELDS.select { |field| public_send(field).present? }
     end

@@ -69,4 +69,28 @@ RSpec.describe "CV upload", type: :request do
     get edit_onboarding_profile_path
     expect(response.body).to match(/read your CV automatically/i)
   end
+
+  it "reports a finished status with a redirect url once parsing completes" do
+    profile = candidate.candidate_profile!
+    document = profile.candidate_documents.create!(
+      document_type: "cv", original_filename: "cv.pdf", parsing_status: "completed", parsed_at: Time.current
+    )
+    get status_onboarding_document_path(document)
+    expect(response.parsed_body).to include(
+      "status" => "completed", "finished" => true, "redirect_url" => edit_onboarding_profile_path
+    )
+  end
+
+  it "does not let a candidate reach another candidate's CV or status" do
+    other = User.create!(email_address: "other@example.com", password: "password123", role: "candidate")
+    other_document = other.candidate_profile!.candidate_documents.create!(
+      document_type: "cv", original_filename: "cv.pdf", parsing_status: "completed", parsed_at: Time.current
+    )
+
+    get download_onboarding_document_path(other_document)
+    expect(response).to have_http_status(:not_found)
+
+    get status_onboarding_document_path(other_document)
+    expect(response).to have_http_status(:not_found)
+  end
 end

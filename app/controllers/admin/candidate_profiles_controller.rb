@@ -1,13 +1,16 @@
 module Admin
-  # Recruiter / admin view of completed candidate profiles (PRD §12: "Admin /
-  # recruitment team can view the completed profile").
   class CandidateProfilesController < BaseController
     include CvStreaming
+
+    PER_PAGE = 25
 
     before_action :set_profile, only: %i[show cv]
 
     def index
-      @profiles = CandidateProfile.completed.recent
+      scope = CandidateProfile.completed.recent
+      @total_pages = [ (scope.count.to_f / PER_PAGE).ceil, 1 ].max
+      @page = params[:page].to_i.clamp(1, @total_pages)
+      @profiles = scope.limit(PER_PAGE).offset((@page - 1) * PER_PAGE)
     end
 
     def show
@@ -19,8 +22,6 @@ module Admin
 
     private
 
-    # Only completed profiles are shared with the recruitment team (PRD §12);
-    # a draft id therefore 404s rather than exposing unsubmitted data.
     def set_profile
       @profile = CandidateProfile.completed
         .includes(:educations, :work_experiences, :candidate_skills, :candidate_languages)

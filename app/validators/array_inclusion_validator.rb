@@ -1,10 +1,3 @@
-# Validates that every element of an array attribute is one of the allowed
-# values. Used for the multi-select JSON columns on CandidateProfile.
-#
-#   validates :transport_types, array_inclusion: { in: %w[bike car] }
-#
-# Blank elements are ignored (they are stripped before validation); requiring
-# "at least one" is left to a separate presence validation.
 class ArrayInclusionValidator < ActiveModel::EachValidator
   def validate_each(record, attribute, value)
     allowed = options[:in]

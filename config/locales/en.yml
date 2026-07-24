@@ -1,31 +1,34 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
+# Internationalization for the onboarding module. User-facing copy lives here
+# rather than inline in Ruby so it can be localized (the product targets a
+# Dutch/English audience) and kept consistent. See:
+# https://guides.rubyonrails.org/i18n.html
 en:
-  hello: "Hello world"
+  activerecord:
+    errors:
+      messages:
+        before_start: "can't be before the start date"
+      models:
+        candidate_profile:
+          attributes:
+            base:
+              language_duplicate: "Each language can only be added once"
+              language_required: "Select at least one language"
+            consent_accepted:
+              consent_required: "must be given before saving your profile"
+
+  onboarding:
+    profiles:
+      saved: "Your profile has been saved. Thank you!"
+      invalid: "Please correct the highlighted fields before saving."
+      cv_unreadable: "We couldn't read your CV automatically — please fill in your details below."
+    uploads:
+      missing_file: "Please choose a CV file to upload."
+      consent_required: "Please accept the consent statement to continue."
+      too_large: "This file is too large. The maximum size is %{max} MB."
+      unsupported: "Unsupported file type. Please upload a PDF, DOC, or DOCX file."
+    parsing:
+      unreadable: "We couldn't read any text from this file. Please continue manually."
+      unsupported: "This file type isn't supported. Please upload a PDF, DOC, or DOCX file."
+      failed: "Something went wrong while reading this CV. Please continue manually."
+    documents:
+      missing_cv: "No CV is available for download."

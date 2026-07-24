@@ -29,6 +29,14 @@ RSpec.describe "Admin access", type: :request do
     expect(response).to redirect_to(root_path)
   end
 
+  it "does not let a candidate download a CV through the admin route" do
+    profile = completed_profile(with_cv: true)
+    sign_in_as users(:candidate)
+
+    get cv_admin_candidate_profile_path(profile)
+    expect(response).to redirect_to(root_path)
+  end
+
   it "lets recruiters see completed profiles" do
     profile = completed_profile
     sign_in_as users(:recruiter)

@@ -1,7 +1,11 @@
 require "rails_helper"
 
-RSpec.describe Cv::ProfileMapper do
+RSpec.describe Cv::MapProfile do
   let(:profile) { users(:candidate).create_candidate_profile! }
+
+  def map(profile, result)
+    described_class.call(profile: profile, parsed_result: result)
+  end
 
   it "maps extracted fields onto the profile and records their source" do
     result = Cv::ParsedResult.new
@@ -9,7 +13,7 @@ RSpec.describe Cv::ProfileMapper do
     result.email = "jane@example.com"
     result.desired_job_function = "general_dentist"
 
-    described_class.new(profile, result).apply!
+    map(profile, result)
     profile.reload
 
     expect(profile.first_name).to eq("Jane")
@@ -25,7 +29,7 @@ RSpec.describe Cv::ProfileMapper do
     result.work_experiences << { job_title: "Tandarts", company_name: "Kliniek", current: true }
     result.languages << { name: "Dutch", level: "native" }
 
-    described_class.new(profile, result).apply!
+    map(profile, result)
     profile.reload
 
     expect(profile.educations.count).to eq(1)
@@ -39,7 +43,7 @@ RSpec.describe Cv::ProfileMapper do
     result = Cv::ParsedResult.new
     result.skills.concat([ "Endodontics", "Some Niche Skill" ])
 
-    described_class.new(profile, result).apply!
+    map(profile, result)
     profile.reload
 
     expect(profile.candidate_skills.matched.pluck(:skill_id)).to eq([ skills(:endodontics).id ])
@@ -50,7 +54,7 @@ RSpec.describe Cv::ProfileMapper do
   it "leaves the profile as a valid draft" do
     result = Cv::ParsedResult.new
     result.first_name = "Jane"
-    described_class.new(profile, result).apply!
+    map(profile, result)
     expect(profile.reload).to be_draft
   end
 
@@ -60,8 +64,8 @@ RSpec.describe Cv::ProfileMapper do
     result.work_experiences << { job_title: "Tandarts", company_name: "Kliniek" }
     result.languages << { name: "Dutch", level: "native" }
 
-    described_class.new(profile, result).apply!
-    described_class.new(profile.reload, result).apply!
+    map(profile, result)
+    map(profile.reload, result)
     profile.reload
 
     expect(profile.educations.count).to eq(1)
@@ -74,10 +78,36 @@ RSpec.describe Cv::ProfileMapper do
     result = Cv::ParsedResult.new
     result.educations << { study: "Tandheelkunde", level: "master" }
 
-    described_class.new(profile, result).apply!
-    described_class.new(profile.reload, result).apply! # a second CV upload
+    map(profile, result)
+    map(profile.reload, result)
     profile.reload
 
     expect(profile.educations.pluck(:study)).to contain_exactly("Manual entry", "Tandheelkunde")
+  end
+
+  it "never converts a manually selected skill into a CV-sourced one" do
+    profile.update!(desired_job_function: "general_dentist")
+    profile.candidate_skills.create!(skill: skills(:endodontics), from_cv: false)
+
+    result = Cv::ParsedResult.new
+    result.skills << "Endodontics"
+
+    map(profile, result)
+    map(profile.reload, result)
+    profile.reload
+
+    endodontics = profile.candidate_skills.where(skill_id: skills(:endodontics).id)
+    expect(endodontics.count).to eq(1)
+    expect(endodontics.first).not_to be_from_cv
+  end
+
+  it "does not overwrite a profile the candidate has already completed" do
+    profile.update!(status: "completed", first_name: "Manual")
+    result = Cv::ParsedResult.new
+    result.first_name = "Parsed"
+
+    map(profile, result)
+
+    expect(profile.reload.first_name).to eq("Manual")
   end
 end

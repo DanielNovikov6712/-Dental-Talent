@@ -1,5 +1,5 @@
 <% if record.errors.any? %>
-  <div class="error-summary" role="alert">
+  <div class="error-summary" role="alert" tabindex="-1" data-controller="error-summary">
     <strong><%= pluralize(record.errors.count, "error") %> need fixing:</strong>
     <ul>
       <% record.errors.full_messages.each do |message| %>

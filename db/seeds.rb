@@ -1,6 +1,3 @@
-# Seeds are idempotent — safe to run repeatedly (bin/rails db:seed).
-
-# --- Skills, grouped by function group (PRD §3.6) ----------------------------
 skills_by_group = {
   "dentist"           => [ "Endodontics", "Restorative dentistry", "Pediatric dentistry", "Surgery", "Aligners" ],
   "dental_hygienist"  => [ "Periodontology", "Prevention", "Scaling", "Patient education" ],
@@ -17,7 +14,6 @@ skills_by_group.each do |group, names|
   end
 end
 
-# --- Languages (common European set; candidates may add more free-text) ------
 languages = {
   "Dutch" => "nl", "English" => "en", "German" => "de", "French" => "fr",
   "Spanish" => "es", "Italian" => "it", "Polish" => "pl", "Portuguese" => "pt",
@@ -29,8 +25,6 @@ languages.each_with_index do |(name, code), index|
   language.update!(code: code, position: index)
 end
 
-# --- Staff accounts for reviewing completed profiles -------------------------
-# Documented demo credentials (see README). Only created outside production.
 unless Rails.env.production?
   {
     "admin@example.com"     => "admin",

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_23_170009) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_24_120002) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -69,7 +69,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_23_170009) do
 
   create_table "candidate_profiles", force: :cascade do |t|
     t.date "available_from"
-    t.json "available_working_days", default: []
+    t.json "available_working_days", default: [], null: false
     t.decimal "average_daily_revenue", precision: 10, scale: 2
     t.string "big_number"
     t.string "big_registration_status"
@@ -83,8 +83,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_23_170009) do
     t.string "desired_job_function"
     t.decimal "desired_percentage", precision: 5, scale: 2
     t.string "email"
-    t.json "employment_types", default: []
-    t.json "extracted_fields", default: []
+    t.json "employment_types", default: [], null: false
+    t.json "extracted_fields", default: [], null: false
     t.string "first_name"
     t.text "internal_notes"
     t.string "last_name"
@@ -92,15 +92,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_23_170009) do
     t.text "motivation"
     t.string "notice_period"
     t.string "phone_number"
-    t.json "preferred_regions", default: []
+    t.json "preferred_regions", default: [], null: false
     t.text "professional_summary"
     t.text "reason_for_looking"
     t.string "search_status"
     t.string "status", default: "draft", null: false
-    t.json "transport_types", default: []
+    t.json "transport_types", default: [], null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.integer "years_of_experience"
+    t.index ["status", "completed_at"], name: "index_candidate_profiles_on_status_and_completed_at"
     t.index ["user_id"], name: "index_candidate_profiles_on_user_id", unique: true
   end
 

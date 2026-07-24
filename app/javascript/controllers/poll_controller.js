@@ -1,9 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Polls the CV processing status endpoint and moves to the review step once
-// parsing finishes (completed or failed — either way the candidate continues).
-// After maxAttempts it stops and reveals a manual "continue" escape hatch so a
-// stuck job (e.g. a dead worker) can never trap the candidate on the spinner.
 export default class extends Controller {
   static targets = ["fallback"]
   static values = {
@@ -34,7 +30,6 @@ export default class extends Controller {
         }
       }
     } catch (_error) {
-      // Transient network error — keep polling.
     }
 
     if (this.attempts >= this.maxAttemptsValue) {

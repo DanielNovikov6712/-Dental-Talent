@@ -10,7 +10,7 @@ class CreateCandidateDocuments < ActiveRecord::Migration[8.1]
       t.string   :parsing_status, null: false, default: "pending"
       t.datetime :parsed_at
       t.string   :parsing_error
-      # Structured parser output kept server-side only (never exposed to candidates).
+
       t.json     :parsed_data
 
       t.timestamps

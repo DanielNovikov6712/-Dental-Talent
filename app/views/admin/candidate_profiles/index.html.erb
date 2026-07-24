@@ -24,6 +24,18 @@
         <% end %>
       </tbody>
     </table>
+
+    <% if @total_pages > 1 %>
+      <nav class="pagination" aria-label="Pagination">
+        <% if @page > 1 %>
+          <%= link_to "← Previous", admin_candidate_profiles_path(page: @page - 1), class: "btn btn--ghost" %>
+        <% end %>
+        <span class="muted">Page <%= @page %> of <%= @total_pages %></span>
+        <% if @page < @total_pages %>
+          <%= link_to "Next →", admin_candidate_profiles_path(page: @page + 1), class: "btn btn--ghost" %>
+        <% end %>
+      </nav>
+    <% end %>
   <% else %>
     <p class="muted">No completed profiles yet.</p>
   <% end %>

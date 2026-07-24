@@ -53,6 +53,14 @@ RSpec.describe CandidateProfile, type: :model do
     end
   end
 
+  describe "gross salary" do
+    it "rejects fractional input instead of silently truncating it" do
+      profile.desired_gross_salary = "3500.75"
+      expect(profile).not_to be_valid
+      expect(profile.errors).to be_of_kind(:desired_gross_salary, :not_an_integer)
+    end
+  end
+
   describe "phone number" do
     it "accepts international formats" do
       profile.phone_number = "+31 (0)6 1234 5678"
@@ -125,9 +133,9 @@ RSpec.describe CandidateProfile, type: :model do
       )
       profile.valid?
 
-      expect(profile.desired_gross_salary).to be_nil      # self-employed => salary irrelevant
-      expect(profile.average_daily_revenue).to be_nil      # assistant => revenue irrelevant
-      expect(profile.big_registration_status).to be_nil    # assistant => BIG irrelevant
+      expect(profile.desired_gross_salary).to be_nil
+      expect(profile.average_daily_revenue).to be_nil
+      expect(profile.big_registration_status).to be_nil
       expect(profile.big_number).to be_nil
     end
 

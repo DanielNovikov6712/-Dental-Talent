@@ -1,6 +1,4 @@
 module Onboarding
-  # The CV processing screen. `show` renders the loading state; the page polls
-  # `status` (JSON) and moves on to the review form once parsing finishes.
   class DocumentsController < BaseController
     include CvStreaming
 

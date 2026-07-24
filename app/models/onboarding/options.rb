@@ -1,12 +1,4 @@
 module Onboarding
-  # Single source of truth for the fixed option sets used across the onboarding
-  # module and for the conditional-form rules that depend on the selected job
-  # function / employment type. Reference data that must be matchable (skills,
-  # languages) lives in the database; these small, logic-bearing lists live here
-  # so the rules and their options never drift apart.
-  #
-  # Each option set is an ordered Hash of +key => human label+. Keys are what we
-  # persist; labels are what we render.
   module Options
     JOB_FUNCTIONS = {
       "general_dentist"          => "General dentist",
@@ -21,7 +13,6 @@ module Onboarding
       "specialist"               => "Specialist"
     }.freeze
 
-    # Function groups that skills are organised by (see db/seeds.rb).
     SKILL_GROUPS = {
       "dentist"           => "Dentist",
       "dental_hygienist"  => "Dental hygienist",
@@ -31,8 +22,6 @@ module Onboarding
       "dental_technician" => "Dental technician"
     }.freeze
 
-    # Maps a candidate's chosen job function to the skill group whose skills we
-    # offer them.
     JOB_FUNCTION_TO_SKILL_GROUP = {
       "general_dentist"           => "dentist",
       "specialist"                => "dentist",
@@ -46,9 +35,8 @@ module Onboarding
       "dental_technician"         => "dental_technician"
     }.freeze
 
-    # Functions for which BIG registration fields are shown/relevant.
     BIG_REGISTRATION_FUNCTIONS = %w[general_dentist dental_hygienist specialist].freeze
-    # Functions for which the "average daily revenue" field is relevant.
+
     REVENUE_FUNCTIONS = %w[general_dentist dental_hygienist specialist prevention_assistant].freeze
 
     EMPLOYMENT_TYPES = {
@@ -58,8 +46,6 @@ module Onboarding
       "temporary"     => "Temporary / interim"
     }.freeze
 
-    # Employment types that make the gross-salary field relevant, and those that
-    # make the desired-percentage field relevant.
     SALARY_EMPLOYMENT_TYPES     = %w[employed temporary].freeze
     PERCENTAGE_EMPLOYMENT_TYPES = %w[self_employed freelance].freeze
 
@@ -83,7 +69,6 @@ module Onboarding
       "not_applicable"   => "Not applicable"
     }.freeze
 
-    # The BIG status for which a BIG number becomes required.
     BIG_REGISTERED_STATUS = "big_registered".freeze
 
     EDUCATION_LEVELS = {
@@ -105,7 +90,6 @@ module Onboarding
       "sunday"    => "Sunday"
     }.freeze
 
-    # Preferred working regions (Dutch provinces).
     REGIONS = {
       "drenthe"       => "Drenthe",
       "flevoland"     => "Flevoland",
@@ -135,17 +119,14 @@ module Onboarding
 
     module_function
 
-    # Valid keys of an option set.
     def keys(collection)
       collection.keys
     end
 
-    # Human label for a key, falling back to a humanized version of the key.
     def label(collection, key)
       collection.fetch(key.to_s) { key.to_s.humanize }
     end
 
-    # Ready for Rails' +options_for_select+ ([label, value] pairs).
     def select(collection)
       collection.map { |key, label| [ label, key ] }
     end

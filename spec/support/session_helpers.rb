@@ -1,5 +1,3 @@
-# Signs a user in for request specs by creating a session and setting the
-# same signed cookie the Authentication concern reads.
 module SessionHelpers
   def sign_in_as(user)
     session = user.sessions.create!
