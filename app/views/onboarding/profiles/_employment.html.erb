@@ -3,7 +3,7 @@
 
   <fieldset class="field">
     <legend>Desired employment type <%= profile_field_badge(profile, :employment_types, required: true) %></legend>
-    <%= multiselect_checkboxes(profile, :employment_types, Onboarding::Options::EMPLOYMENT_TYPES,
+    <%= multiselect_checkboxes(profile, :employment_types, Constants::EMPLOYMENT_TYPES,
           input_data: { conditional_fields_target: "employment", action: "change->conditional-fields#update" }) %>
   </fieldset>
 
@@ -14,31 +14,31 @@
     </div>
 
     <div class="field section-fields" data-conditional-fields-target="group"
-         data-visible-employment="<%= Onboarding::Options::SALARY_EMPLOYMENT_TYPES.join(' ') %>">
+         data-visible-employment="<%= Constants::SALARY_EMPLOYMENT_TYPES.join(' ') %>">
       <%= form.label :desired_gross_salary, "Desired gross monthly salary (€)" %>
       <%= form.number_field :desired_gross_salary, min: 0 %>
     </div>
 
     <div class="field section-fields" data-conditional-fields-target="group"
-         data-visible-employment="<%= Onboarding::Options::PERCENTAGE_EMPLOYMENT_TYPES.join(' ') %>">
+         data-visible-employment="<%= Constants::PERCENTAGE_EMPLOYMENT_TYPES.join(' ') %>">
       <%= form.label :desired_percentage, "Desired percentage (%)" %>
       <%= form.number_field :desired_percentage, min: 0, max: 100, step: 0.5 %>
     </div>
 
     <div class="field section-fields" data-conditional-fields-target="group"
-         data-visible-functions="<%= Onboarding::Options::REVENUE_FUNCTIONS.join(' ') %>">
+         data-visible-functions="<%= Constants::REVENUE_FUNCTIONS.join(' ') %>">
       <%= form.label :average_daily_revenue, "Average daily revenue (€)" %>
       <%= form.number_field :average_daily_revenue, min: 0 %>
     </div>
   </div>
 
   <div class="section-fields" data-conditional-fields-target="group"
-       data-visible-functions="<%= Onboarding::Options::BIG_REGISTRATION_FUNCTIONS.join(' ') %>">
+       data-visible-functions="<%= Constants::BIG_REGISTRATION_FUNCTIONS.join(' ') %>">
     <div class="grid-2">
       <div class="field">
         <%= form.label :big_registration_status, "BIG registration status" %>
         <%= form.select :big_registration_status,
-              option_choices(Onboarding::Options::BIG_REGISTRATION_STATUSES), include_blank: "Select status" %>
+              option_choices(Constants::BIG_REGISTRATION_STATUSES), include_blank: "Select status" %>
       </div>
       <div class="field">
         <%= form.label :big_number do %>BIG number <%= profile_field_badge(profile, :big_number) %><% end %>

@@ -1,15 +1,4 @@
 class CandidateProfile < ApplicationRecord
-  ARRAY_ATTRIBUTES = %i[
-    preferred_regions transport_types employment_types
-    available_working_days extracted_fields
-  ].freeze
-
-  WORK_EXPERIENCE_CORE_FIELDS = %i[
-    job_title company_name responsibilities start_date end_date
-  ].freeze
-
-  PHONE_FORMAT = /\A\+?[\d\s().\-\/]+\z/
-
   belongs_to :user
 
   has_many :candidate_documents, dependent: :destroy
@@ -27,7 +16,7 @@ class CandidateProfile < ApplicationRecord
   accepts_nested_attributes_for :educations, allow_destroy: true, reject_if: :all_blank
 
   accepts_nested_attributes_for :work_experiences, allow_destroy: true,
-    reject_if: ->(attrs) { WORK_EXPERIENCE_CORE_FIELDS.none? { |f| attrs[f].present? || attrs[f.to_s].present? } }
+    reject_if: ->(attrs) { Constants::WORK_EXPERIENCE_CORE_FIELDS.none? { |f| attrs[f].present? || attrs[f.to_s].present? } }
   accepts_nested_attributes_for :candidate_languages, allow_destroy: true,
     reject_if: ->(attrs) { attrs[:language_id].blank? && attrs[:name].blank? }
 
@@ -37,15 +26,15 @@ class CandidateProfile < ApplicationRecord
 
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
   validates :desired_job_function,
-    inclusion: { in: Onboarding::Options::JOB_FUNCTIONS.keys }, allow_blank: true
+    inclusion: { in: Constants::JOB_FUNCTIONS.keys }, allow_blank: true
   validates :search_status,
-    inclusion: { in: Onboarding::Options::SEARCH_STATUSES.keys }, allow_blank: true
+    inclusion: { in: Constants::SEARCH_STATUSES.keys }, allow_blank: true
   validates :big_registration_status,
-    inclusion: { in: Onboarding::Options::BIG_REGISTRATION_STATUSES.keys }, allow_blank: true
-  validates :preferred_regions, array_inclusion: { in: Onboarding::Options::REGIONS.keys }
-  validates :transport_types, array_inclusion: { in: Onboarding::Options::TRANSPORT_TYPES.keys }
-  validates :employment_types, array_inclusion: { in: Onboarding::Options::EMPLOYMENT_TYPES.keys }
-  validates :available_working_days, array_inclusion: { in: Onboarding::Options::WORKING_DAYS.keys }
+    inclusion: { in: Constants::BIG_REGISTRATION_STATUSES.keys }, allow_blank: true
+  validates :preferred_regions, array_inclusion: { in: Constants::REGIONS.keys }
+  validates :transport_types, array_inclusion: { in: Constants::TRANSPORT_TYPES.keys }
+  validates :employment_types, array_inclusion: { in: Constants::EMPLOYMENT_TYPES.keys }
+  validates :available_working_days, array_inclusion: { in: Constants::WORKING_DAYS.keys }
   validates :max_travel_time,
     numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
   validates :years_of_experience,
@@ -111,7 +100,7 @@ class CandidateProfile < ApplicationRecord
   end
 
   def normalize_array_attributes
-    ARRAY_ATTRIBUTES.each do |attribute|
+    Constants::ARRAY_ATTRIBUTES.each do |attribute|
       value = self[attribute]
       next unless value.is_a?(Array)
 
@@ -143,7 +132,7 @@ class CandidateProfile < ApplicationRecord
     return if phone_number.blank?
 
     digits = phone_number.scan(/\d/).size
-    unless phone_number.match?(PHONE_FORMAT) && digits.between?(7, 15)
+    unless phone_number.match?(Constants::PHONE_FORMAT) && digits.between?(7, 15)
       errors.add(:phone_number, :invalid)
     end
   end
@@ -155,7 +144,7 @@ class CandidateProfile < ApplicationRecord
   end
 
   def big_number_present_when_registered
-    return unless big_registration_status == Onboarding::Options::BIG_REGISTERED_STATUS
+    return unless big_registration_status == Constants::BIG_REGISTERED_STATUS
     return if big_number.present?
 
     errors.add(:big_number, :blank)

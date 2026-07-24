@@ -4,7 +4,7 @@
   <p class="muted"><%= link_to "← Back to profiles", admin_candidate_profiles_path %></p>
   <h1><%= @profile.full_name.presence || @profile.email %></h1>
   <p class="lead">
-    <%= option_label(Onboarding::Options::JOB_FUNCTIONS, @profile.desired_job_function) %>
+    <%= option_label(Constants::JOB_FUNCTIONS, @profile.desired_job_function) %>
     · completed <%= @profile.completed_at&.strftime("%-d %B %Y") %>
   </p>
   <% if @profile.candidate_documents.cvs.any? %>

@@ -5,16 +5,12 @@ module Cv
   class ExtractText
     include Interactor
 
-    SUPPORTED_EXTENSIONS = %w[.pdf .docx .doc].freeze
-
-    DOC_SCAN_BYTES = 2.megabytes
-
     def call
       document = context.document
       context.fail!(error: I18n.t("onboarding.parsing.unreadable")) unless document.file.attached?
 
       extension = File.extname(document.original_filename.to_s).downcase
-      context.fail!(error: I18n.t("onboarding.parsing.unsupported")) unless SUPPORTED_EXTENSIONS.include?(extension)
+      context.fail!(error: I18n.t("onboarding.parsing.unsupported")) unless Constants::SUPPORTED_EXTENSIONS.include?(extension)
 
       text = safe_extract(document, extension)
       context.fail!(error: I18n.t("onboarding.parsing.unreadable")) if text.blank?
@@ -50,7 +46,7 @@ module Cv
     end
 
     def extract_doc(path)
-      raw = normalize(File.binread(path, DOC_SCAN_BYTES))
+      raw = normalize(File.binread(path, Constants::DOC_SCAN_BYTES))
       runs = raw.scan(/[[:print:]\t]{4,}/).map(&:strip).reject(&:blank?)
       text = runs.join("\n")
       text.length >= 40 ? text : ""

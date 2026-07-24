@@ -2,15 +2,13 @@ module Admin
   class CandidateProfilesController < BaseController
     include CvStreaming
 
-    PER_PAGE = 25
-
     before_action :set_profile, only: %i[show cv]
 
     def index
       scope = CandidateProfile.completed.recent
-      @total_pages = [ (scope.count.to_f / PER_PAGE).ceil, 1 ].max
+      @total_pages = [ (scope.count.to_f / Constants::PER_PAGE).ceil, 1 ].max
       @page = params[:page].to_i.clamp(1, @total_pages)
-      @profiles = scope.limit(PER_PAGE).offset((@page - 1) * PER_PAGE)
+      @profiles = scope.limit(Constants::PER_PAGE).offset((@page - 1) * Constants::PER_PAGE)
     end
 
     def show

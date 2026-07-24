@@ -10,7 +10,7 @@
     Select a job function above to see the relevant skills.
   </p>
 
-  <% Onboarding::Options::SKILL_GROUPS.each_key do |group| %>
+  <% Constants::SKILL_GROUPS.each_key do |group| %>
     <div class="section-fields" data-conditional-fields-target="skillGroup"
          data-skill-group="<%= group %>" <%= "hidden" unless group == active_group %>>
       <div class="check-grid">

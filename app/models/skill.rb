@@ -3,7 +3,7 @@ class Skill < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { scope: :function_group, case_sensitive: false }
   validates :function_group,
-    presence: true, inclusion: { in: Onboarding::Options::SKILL_GROUPS.keys }
+    presence: true, inclusion: { in: Constants::SKILL_GROUPS.keys }
 
   scope :ordered, -> { order(:function_group, :position, :name) }
   scope :for_group, ->(group) { where(function_group: group).order(:position, :name) }

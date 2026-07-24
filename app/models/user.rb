@@ -1,6 +1,4 @@
 class User < ApplicationRecord
-  ROLES = %w[candidate recruiter admin].freeze
-
   has_secure_password
   has_many :sessions, dependent: :destroy
   has_one :candidate_profile, dependent: :destroy
@@ -10,7 +8,7 @@ class User < ApplicationRecord
   validates :email_address, presence: true, uniqueness: true,
     format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, length: { minimum: 8 }, allow_nil: true
-  validates :role, inclusion: { in: ROLES }
+  validates :role, inclusion: { in: Constants::ROLES }
 
   def candidate? = role == "candidate"
   def recruiter? = role == "recruiter"

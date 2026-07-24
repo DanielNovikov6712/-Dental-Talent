@@ -4,14 +4,8 @@ class OnboardingWebhookJob < ApplicationJob
   queue_as :default
 
   class DeliveryError < StandardError; end
-
-  OPEN_TIMEOUT = 5
-  READ_TIMEOUT = 5
-
   retry_on Net::OpenTimeout, Net::ReadTimeout, DeliveryError, wait: :polynomially_longer, attempts: 5
   discard_on ActiveJob::DeserializationError
-
-  EVENT_NAME = "candidate_onboarding_completed".freeze
 
   def perform(profile_id)
     profile = CandidateProfile.find_by(id: profile_id)
@@ -28,8 +22,8 @@ class OnboardingWebhookJob < ApplicationJob
   def post(uri, body)
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = uri.scheme == "https"
-    http.open_timeout = OPEN_TIMEOUT
-    http.read_timeout = READ_TIMEOUT
+    http.open_timeout = Constants::OPEN_TIMEOUT
+    http.read_timeout = Constants::READ_TIMEOUT
 
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
@@ -40,7 +34,7 @@ class OnboardingWebhookJob < ApplicationJob
 
   def payload(profile)
     {
-      event: EVENT_NAME,
+      event: Constants::EVENT_NAME,
       occurred_at: profile.completed_at&.iso8601,
       candidate: {
         id: profile.id,

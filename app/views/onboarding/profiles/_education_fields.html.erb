@@ -15,7 +15,7 @@
   <div class="grid-2">
     <div class="field">
       <%= f.label :level %>
-      <%= f.select :level, option_choices(Onboarding::Options::EDUCATION_LEVELS), include_blank: "Select level" %>
+      <%= f.select :level, option_choices(Constants::EDUCATION_LEVELS), include_blank: "Select level" %>
     </div>
     <div class="field">
       <%= f.label :location, "City and country" %>

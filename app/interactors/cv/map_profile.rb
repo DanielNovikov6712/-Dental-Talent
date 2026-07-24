@@ -99,7 +99,7 @@ module Cv
     end
 
     def valid_level(level)
-      level if Onboarding::Options::LANGUAGE_LEVELS.key?(level.to_s)
+      level if Constants::LANGUAGE_LEVELS.key?(level.to_s)
     end
   end
 end

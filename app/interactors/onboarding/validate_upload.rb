@@ -21,7 +21,7 @@ module Onboarding
 
     def allowed_type?(file)
       extension = File.extname(file.original_filename.to_s).downcase
-      Onboarding::ALLOWED_EXTENSIONS.include?(extension) ||
+      Constants::ALLOWED_EXTENSIONS.include?(extension) ||
         Onboarding.allowed_content_types.include?(file.content_type)
     end
   end

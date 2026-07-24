@@ -1,6 +1,4 @@
 class CandidateDocument < ApplicationRecord
-  DOCUMENT_TYPES = %w[cv].freeze
-
   belongs_to :candidate_profile
   has_one_attached :file
 
@@ -8,7 +6,7 @@ class CandidateDocument < ApplicationRecord
     { pending: "pending", processing: "processing", completed: "completed", failed: "failed" },
     default: "pending"
 
-  validates :document_type, inclusion: { in: DOCUMENT_TYPES }
+  validates :document_type, inclusion: { in: Constants::DOCUMENT_TYPES }
 
   scope :cvs, -> { where(document_type: "cv") }
   scope :recent, -> { order(created_at: :desc) }

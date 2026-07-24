@@ -1,56 +1,5 @@
 module Cv
   class HeuristicParser
-    EMAIL_REGEXP = /[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i
-    PHONE_REGEXP = /(?<![\w])(\+?\d[\d\s().\-]{6,}\d)/
-    YEAR_REGEXP  = /\b(?:19|20)\d{2}\b/
-    PRESENT_REGEXP = /\b(?:present|current|now|heden)\b/i
-
-    SECTION_PATTERNS = {
-      summary:     /\A(professional\s+)?(summary|profile|profiel|persoonlijk profiel|over mij|about me)\z/,
-      experience:  /\A(work\s+)?(experience|employment history|employment|werkervaring|ervaring|loopbaan)\z/,
-      education:   /\A(education|opleiding(en)?|onderwijs|studies?)\z/,
-      skills:      /\A(skills|competenties|vaardigheden|kwaliteiten)\z/,
-      languages:   /\A(languages|talen|taalvaardigheid)\z/
-    }.freeze
-
-    LANGUAGE_NAMES = {
-      "dutch" => "Dutch", "nederlands" => "Dutch",
-      "english" => "English", "engels" => "English",
-      "german" => "German", "duits" => "German",
-      "french" => "French", "frans" => "French",
-      "spanish" => "Spanish", "spaans" => "Spanish",
-      "italian" => "Italian", "italiaans" => "Italian",
-      "polish" => "Polish", "pools" => "Polish",
-      "portuguese" => "Portuguese", "portugees" => "Portuguese",
-      "turkish" => "Turkish", "turks" => "Turkish",
-      "arabic" => "Arabic", "arabisch" => "Arabic",
-      "ukrainian" => "Ukrainian", "oekraïens" => "Ukrainian",
-      "russian" => "Russian", "russisch" => "Russian"
-    }.freeze
-
-    LEVEL_KEYWORDS = {
-      "native" => "native", "moedertaal" => "native", "mother tongue" => "native",
-      "fluent" => "fluent", "vloeiend" => "fluent",
-      "c2" => "c2", "c1" => "c1", "b2" => "b2", "b1" => "b1", "a2" => "a2", "a1" => "a1",
-      "basic" => "basic", "basis" => "basic", "beginner" => "basic"
-    }.freeze
-
-    JOB_FUNCTION_PATTERNS = [
-      [ /mondhygi[eë]nist|dental hygienist|hygienist/i, "dental_hygienist" ],
-      [ /paro[\-\s]?preventie/i,                        "paro_prevention_assistant" ],
-      [ /preventie[\s\-]?assistent|prevention assistant/i, "prevention_assistant" ],
-      [ /orthodont(ie|ic)[\s\-]?assistent|orthodontic assistant/i, "orthodontic_assistant" ],
-      [ /tandartsassistent|dental assistant|dental nurse|tandarts[\s\-]?assistent/i, "dental_assistant" ],
-      [ /praktijkmanager|practice manager|office manager/i, "practice_manager" ],
-      [ /baliemedewerker|receptionist|front[\s\-]?office/i, "front_office" ],
-      [ /tandtechnicus|dental technician|lab technician/i,  "dental_technician" ],
-      [ /orthodontist|kaakchirurg|endodontoloog|parodontoloog|implantoloog|specialist/i, "specialist" ],
-      [ /tandarts|dentist/i, "general_dentist" ]
-    ].freeze
-
-    INSTITUTION_KEYWORDS = /universiteit|hogeschool|university|college|institute|instituut|academy|academie|\broc\b|school/i
-    COMPANY_KEYWORDS     = /\bb\.?v\.?\b|kliniek|praktijk|clinic|centre|center|tandarts|dental|ltd|gmbh|group/i
-
     def self.call(text)
       new(text).parse
     end
@@ -82,7 +31,7 @@ module Cv
     private
 
     def assign_contact(result)
-      result.email        = @text[EMAIL_REGEXP]&.downcase
+      result.email        = @text[Constants::EMAIL_REGEXP]&.downcase
       result.phone_number = detect_phone
       city, country = detect_city_and_country
       result.city    = city
@@ -91,7 +40,7 @@ module Cv
 
     def detect_phone
       candidate = labeled_value(/tel|phone|mobiel|mobile|gsm/i)
-      match = candidate&.match(PHONE_REGEXP) || @text.match(PHONE_REGEXP)
+      match = candidate&.match(Constants::PHONE_REGEXP) || @text.match(Constants::PHONE_REGEXP)
       value = match && match[1].strip
       return nil unless value
 
@@ -115,7 +64,7 @@ module Cv
     def detect_job_function(focus)
       return if focus.blank?
 
-      JOB_FUNCTION_PATTERNS.each do |regexp, function|
+      Constants::JOB_FUNCTION_PATTERNS.each do |regexp, function|
         return function if focus.match?(regexp)
       end
       nil
@@ -132,7 +81,7 @@ module Cv
       return unless match
 
       result.big_number = match[1]
-      result.big_registration_status = Onboarding::Options::BIG_REGISTERED_STATUS
+      result.big_registration_status = Constants::BIG_REGISTERED_STATUS
     end
 
     def split_sections
@@ -155,7 +104,7 @@ module Cv
       normalized = line.strip.downcase.chomp(":").strip
       return nil if normalized.empty? || normalized.length > 40
 
-      SECTION_PATTERNS.each { |name, pattern| return name if normalized.match?(pattern) }
+      Constants::SECTION_PATTERNS.each { |name, pattern| return name if normalized.match?(pattern) }
       nil
     end
 
@@ -194,8 +143,8 @@ module Cv
     end
 
     def line_is_job_or_org?(line)
-      JOB_FUNCTION_PATTERNS.any? { |regexp, _| line.match?(regexp) } ||
-        line.match?(INSTITUTION_KEYWORDS) || line.match?(COMPANY_KEYWORDS)
+      Constants::JOB_FUNCTION_PATTERNS.any? { |regexp, _| line.match?(regexp) } ||
+        line.match?(Constants::INSTITUTION_KEYWORDS) || line.match?(Constants::COMPANY_KEYWORDS)
     end
 
     def parse_languages
@@ -204,7 +153,7 @@ module Cv
 
       lines.filter_map do |line|
         normalized = line.downcase
-        name = LANGUAGE_NAMES.find { |title, _| normalized.include?(title) }&.last
+        name = Constants::LANGUAGE_NAMES.find { |title, _| normalized.include?(title) }&.last
         next unless name
 
         { name: name, level: detect_level(normalized) }
@@ -212,7 +161,7 @@ module Cv
     end
 
     def detect_level(text)
-      LEVEL_KEYWORDS.each { |keyword, level| return level if text.include?(keyword) }
+      Constants::LEVEL_KEYWORDS.each { |keyword, level| return level if text.include?(keyword) }
       nil
     end
 
@@ -236,13 +185,13 @@ module Cv
 
     def parse_educations
       section_blocks(:education).filter_map do |block|
-        years  = block.join(" ").scan(YEAR_REGEXP)
+        years  = block.join(" ").scan(Constants::YEAR_REGEXP)
         study  = block.find { |line| !line.match?(/\A[\d\s\-–—to.]+\z/) }
         next unless study
 
         {
           study: study,
-          institution: block.find { |line| line.match?(INSTITUTION_KEYWORDS) && line != study },
+          institution: block.find { |line| line.match?(Constants::INSTITUTION_KEYWORDS) && line != study },
           level: detect_education_level(block.join(" ")),
           start_date: year_to_date(years.min),
           end_date: block_present?(block) ? nil : year_to_date(years.max)
@@ -251,7 +200,7 @@ module Cv
     end
 
     def detect_education_level(text)
-      Onboarding::Options::EDUCATION_LEVELS.keys.find do |level|
+      Constants::EDUCATION_LEVELS.keys.find do |level|
         text.match?(/\b#{Regexp.escape(level)}\b/i)
       end
     end
@@ -261,10 +210,10 @@ module Cv
         content = block.reject { |line| line.match?(/\A[\d\s\-–—to.]+\z/) }
         next if content.empty?
 
-        years = block.join(" ").scan(YEAR_REGEXP)
+        years = block.join(" ").scan(Constants::YEAR_REGEXP)
         {
           job_title: content[0],
-          company_name: content.find { |line| line.match?(COMPANY_KEYWORDS) && line != content[0] } || content[1],
+          company_name: content.find { |line| line.match?(Constants::COMPANY_KEYWORDS) && line != content[0] } || content[1],
           responsibilities: content[2..]&.join("\n").presence,
           start_date: year_to_date(years.min),
           end_date: block_present?(block) ? nil : year_to_date(years.max),
@@ -274,7 +223,7 @@ module Cv
     end
 
     def block_present?(block)
-      block.any? { |line| line.match?(PRESENT_REGEXP) }
+      block.any? { |line| line.match?(Constants::PRESENT_REGEXP) }
     end
 
     def year_to_date(year)

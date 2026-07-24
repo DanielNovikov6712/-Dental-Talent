@@ -5,5 +5,5 @@ class Education < ApplicationRecord
 
   validates :study, presence: true, on: :complete
   validates :level,
-    inclusion: { in: Onboarding::Options::EDUCATION_LEVELS.keys }, allow_blank: true
+    inclusion: { in: Constants::EDUCATION_LEVELS.keys }, allow_blank: true
 end

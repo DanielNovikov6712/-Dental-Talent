@@ -5,19 +5,19 @@
     <div class="field">
       <%= form.label :desired_job_function do %>Desired job function <%= profile_field_badge(profile, :desired_job_function, required: true) %><% end %>
       <%= form.select :desired_job_function,
-            option_choices(Onboarding::Options::JOB_FUNCTIONS),
+            option_choices(Constants::JOB_FUNCTIONS),
             { include_blank: "Select a function" },
             data: { conditional_fields_target: "functionSelect", action: "change->conditional-fields#update" } %>
     </div>
     <div class="field">
       <%= form.label :search_status do %>Search status <%= profile_field_badge(profile, :search_status, required: true) %><% end %>
-      <%= form.select :search_status, option_choices(Onboarding::Options::SEARCH_STATUSES), include_blank: "Select status" %>
+      <%= form.select :search_status, option_choices(Constants::SEARCH_STATUSES), include_blank: "Select status" %>
     </div>
   </div>
 
   <fieldset class="field">
     <legend>Preferred regions <%= profile_field_badge(profile, :preferred_regions, required: true) %></legend>
-    <%= multiselect_checkboxes(profile, :preferred_regions, Onboarding::Options::REGIONS) %>
+    <%= multiselect_checkboxes(profile, :preferred_regions, Constants::REGIONS) %>
   </fieldset>
 
   <div class="grid-2">
@@ -27,7 +27,7 @@
     </div>
     <fieldset class="field">
       <legend>Transport type</legend>
-      <%= multiselect_checkboxes(profile, :transport_types, Onboarding::Options::TRANSPORT_TYPES) %>
+      <%= multiselect_checkboxes(profile, :transport_types, Constants::TRANSPORT_TYPES) %>
     </fieldset>
   </div>
 

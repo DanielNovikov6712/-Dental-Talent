@@ -15,7 +15,7 @@
         <% @profiles.each do |profile| %>
           <tr>
             <td><%= profile.full_name.presence || profile.email %></td>
-            <td><%= option_label(Onboarding::Options::JOB_FUNCTIONS, profile.desired_job_function) || "—" %></td>
+            <td><%= option_label(Constants::JOB_FUNCTIONS, profile.desired_job_function) || "—" %></td>
             <td><%= profile.city.presence || "—" %></td>
             <td><%= profile.years_of_experience ? "#{profile.years_of_experience} yr" : "—" %></td>
             <td><%= profile.completed_at&.strftime("%-d %b %Y") %></td>

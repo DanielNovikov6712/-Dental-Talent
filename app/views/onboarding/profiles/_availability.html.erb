@@ -3,7 +3,7 @@
 
   <fieldset class="field">
     <legend>Available working days <%= profile_field_badge(profile, :available_working_days, required: true) %></legend>
-    <%= multiselect_checkboxes(profile, :available_working_days, Onboarding::Options::WORKING_DAYS) %>
+    <%= multiselect_checkboxes(profile, :available_working_days, Constants::WORKING_DAYS) %>
   </fieldset>
 
   <div class="grid-2">

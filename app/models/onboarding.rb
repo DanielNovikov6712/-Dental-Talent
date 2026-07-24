@@ -1,6 +1,4 @@
 module Onboarding
-  ALLOWED_EXTENSIONS = %w[.pdf .doc .docx].freeze
-
   module_function
 
   def config

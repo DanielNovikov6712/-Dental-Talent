@@ -21,7 +21,7 @@
 <%= form_with model: @candidate_profile, url: onboarding_profile_path, method: :patch,
       data: {
         controller: "conditional-fields",
-        conditional_fields_skill_map_value: Onboarding::Options::JOB_FUNCTION_TO_SKILL_GROUP.to_json
+        conditional_fields_skill_map_value: Constants::JOB_FUNCTION_TO_SKILL_GROUP.to_json
       } do |form| %>
 
   <%= render "shared/error_summary", record: @candidate_profile %>

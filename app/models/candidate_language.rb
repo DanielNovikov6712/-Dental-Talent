@@ -6,7 +6,7 @@ class CandidateLanguage < ApplicationRecord
 
   validates :name, presence: true, if: -> { language_id.blank? }
   validates :level,
-    inclusion: { in: Onboarding::Options::LANGUAGE_LEVELS.keys }, allow_blank: true
+    inclusion: { in: Constants::LANGUAGE_LEVELS.keys }, allow_blank: true
   validates :language_id, uniqueness: { scope: :candidate_profile_id }, allow_nil: true
 
   validate :free_text_name_not_duplicated
@@ -16,7 +16,7 @@ class CandidateLanguage < ApplicationRecord
   end
 
   def level_label
-    Onboarding::Options.label(Onboarding::Options::LANGUAGE_LEVELS, level) if level.present?
+    Onboarding::Options.label(Constants::LANGUAGE_LEVELS, level) if level.present?
   end
 
   private
